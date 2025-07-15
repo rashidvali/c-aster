@@ -1,3 +1,9 @@
+> **🚀 Public Release Announcement**  
+> This is the initial public release of **C\*** (C aster) — a memory-safe micro-library for C.  
+> We welcome your feedback, testing, and contributions as the project grows.  
+> See [CONTRIBUTING.md](./contributing.md) to get involved.
+
+
 # C\* (C aster)
 
 **C\*** (pronounced "C aster") is a memory-safe micro library for C, with zero OS or compiler dependencies. Designed for simplicity, modularity, and rapid adoption, it empowers developers to fortify existing projects without full rewrites. It introduces a lightweight memory safety framework, allowing developers to write safer C code without giving up control or performance.
