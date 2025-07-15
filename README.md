@@ -199,7 +199,7 @@ If you discover unexpected behavior or a potential memory safety issue, please o
 
 ## Roadmap
 
--
+This project does not currently maintain a formal roadmap. Planned improvements may be tracked via issues or discussions.
 
 ---
 
