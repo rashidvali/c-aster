@@ -187,7 +187,7 @@ Please open an issue or submit a pull request on GitHub.
 
 ### Bug Reporting
 
-If you discover unexpected behavior or a potential memory safety issue, please open a [GitHub issue](https://github.com/your-repo-link/issues) with details, test case, and reproduction steps.
+If you discover unexpected behavior or a potential memory safety issue, please open a [GitHub issue](https://github.com/rashidvali/c-aster/issues) with details, test case, and reproduction steps.
 
 ---
 
