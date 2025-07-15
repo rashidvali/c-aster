@@ -155,7 +155,7 @@ You can find basic tests in the [`examples/`](./examples) folder:
 
 - `safemem_simple_test.c` – runs `test_memory_cycle()` and `simulate_workload()` to validate allocation and reuse logic.
 
-\* The ```c_ast_config.h``` file sets the macro `C_ASTR_CONFIG_MAX_BLOCKS` to 64, which allows for 64 successful memory allocations. It will fail on the 65th allocation (i.e., when the allocation count reaches 64).
+\* The ```c_ast_config.h``` file sets the macro `C_ASTR_CONFIG_MAX_BLOCKS` to 64, which allows `test_memory_cycle()` 64 successful memory allocations. It will fail on the 65th allocation (i.e., when the allocation count reaches 64).
 
 ---
 
