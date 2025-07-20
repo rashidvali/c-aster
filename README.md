@@ -212,6 +212,7 @@ This project does not currently maintain a formal roadmap. Planned improvements 
 ## Disclaimer
 
 Developers are expected to avoid unsafe native functions and use C\* safe alternatives instead. A mapping reference between unsafe and safe APIs is provided. C\* maintains a registry of available memory chunks, offering runtime validation and safety. This introduces a minor performance overhead, which is the tradeoff for improved reliability. While C\* greatly improves memory safety, it is not a full memory-safe language replacement. Use it as a building block toward safer systems within the power and constraints of C.
+For Windows/Linux multithreaded environments, safe_malloc and safe_free are not thread-safe by default. You can wrap calls with your own mutex or fork the library to add POSIX/Win32 locking if needed.
 
 ---
 
