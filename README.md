@@ -4,7 +4,7 @@
 > See [CONTRIBUTING.md](./contributing.md) to get involved.
 
 
-# C\* (C aster) ![OlitDB Logo](assets/Aster_Flower_128x64.png)
+# C\* (C aster) ![OlitDB Logo](assets/Aster_Flower_small.png)
 
 **C\*** (pronounced "C aster") is a memory-safe micro library for C, with zero OS or compiler dependencies. Designed for simplicity, modularity, and rapid adoption, it empowers developers to fortify existing projects without full rewrites. It introduces a lightweight memory safety framework, allowing developers to write safer C code without giving up control or performance.
 
