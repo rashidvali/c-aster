@@ -4,7 +4,7 @@
 > See [CONTRIBUTING.md](./contributing.md) to get involved.
 
 <p align="center">
-  <img src="./assets/Aster_Flower_128x64.png" alt="Aster Flower Logo" width="640"/>
+  <img src="./assets/Aster_Flower_128x64.png" alt="Aster Flower Logo" width="128"/>
 </p>
 
 # C\* (C aster) 
