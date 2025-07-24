@@ -27,7 +27,7 @@ The C programming language is powerful, but inherently unsafe when it comes to d
 - **Interoperable**: Plays well with third-party libraries, legacy components, and multi-module structures.
 - **Small footprint**: Less than 300 lines of logic — lean, elegant, and purpose-built.
 - **Memory Safety**: Enforces bounds checking and controlled memory access.
-- **Embedded Compatibility**: Designed to run on constrained systems like ESP32 with or without RTOS.
+- **Embedded Compatibility**: Designed to run on constrained systems like ESP-IDF (ESP32 microcontroller) with or without RTOS.
 - **Performance Awareness**: Uses pre-allocated arenas and simple allocators to avoid heap fragmentation.
 - **Safe alternatives to memory related functions**: Developers are expected to avoid unsafe native functions and use C\* safe alternatives instead. A mapping reference between unsafe and safe APIs is provided.
 - **Runtime Registry**: C\* maintains a registry of available memory chunks, offering runtime validation and safety. This introduces a minor performance overhead, which is the tradeoff for improved reliability.
