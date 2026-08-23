@@ -46,7 +46,7 @@ This document maps native C memory functions to their C* safe equivalents. Devel
 ---
 
 ## 🗺 Adoption Tips
-- **Discipline is key**: Avoid using native functions directly in memory-safe modules.
+- **Discipline is key**: Avoid using native functions directly in memory-safety modules.
 - **Mixing allowed**: Third-party/legacy modules can coexist as long as they don’t bypass or corrupt tracked memory.
 - **Registry costs**: A minor performance cost (~small map) is incurred for safety.
 
