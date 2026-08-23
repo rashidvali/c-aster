@@ -52,7 +52,6 @@ static SemaphoreHandle_t safemem_mutex;
 
 static uint8_t arena[C_ASTR_CONFIG_ARENA_SIZE];
 static FreeBlock block_pool[C_ASTR_CONFIG_MAX_BLOCKS];
-static FreeBlock* free_list = NULL;
 static FreeBlock* node_pool = NULL;
 static FreeBlock* allocated_list = NULL;
 
