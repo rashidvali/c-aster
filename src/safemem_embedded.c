@@ -115,25 +115,63 @@ void safemem_init() {
 // === Allocation ===
 void* safe_malloc(size_t size) {
     safemem_lock();
-    FreeBlock* prev = NULL, * curr = free_list;
+
+    FreeBlock* prev = NULL;
+    FreeBlock* curr = free_list;
+
     while (curr) {
         if (curr->size >= size) {
             void* allocated = curr->addr;
+            FreeBlock* allocated_block;
+
             if (curr->size == size) {
-                if (prev) prev->next = curr->next;
-                else free_list = curr->next;
-                free_node(curr);
+                /*
+                 * Exact fit: remove this node from the free list and
+                 * reuse the same metadata node for the allocation.
+                 */
+                if (prev)
+                    prev->next = curr->next;
+                else
+                    free_list = curr->next;
+
+                allocated_block = curr;
             }
             else {
+                /*
+                 * Partial allocation: the free block remains in the
+                 * free list, so obtain another metadata node to track
+                 * the allocated region.
+                 */
+                allocated_block = alloc_node();
+                if (!allocated_block) {
+                    SAFE_LOGE(TAG_MEM,
+                              "Allocation of %zu bytes failed: no metadata node available\n",
+                              size);
+                    safemem_unlock();
+                    return NULL;
+                }
+
                 curr->addr = (uint8_t*)curr->addr + size;
                 curr->size -= size;
             }
+
+            /*
+             * Register the allocation so its individual boundaries
+             * can be validated later.
+             */
+            allocated_block->addr = allocated;
+            allocated_block->size = size;
+            allocated_block->next = allocated_list;
+            allocated_list = allocated_block;
+
             safemem_unlock();
             return allocated;
         }
+
         prev = curr;
         curr = curr->next;
     }
+
     SAFE_LOGE(TAG_MEM, "Allocation of %zu bytes failed\n", size);
     safemem_unlock();
     return NULL;
