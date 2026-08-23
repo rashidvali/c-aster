@@ -25,7 +25,7 @@ The C programming language is powerful, but inherently unsafe when it comes to d
 ### Key Motivations
 
 - **Pure C, zero setup**: Drop it into any codebase — no special toolchains or build flags required.
-- **Memory safety by design**: Rewritten modules are automatically protected from common C pitfalls.
+- **Memory safety by design**: Modules that consistently use C* allocation and access APIs gain runtime protection against common memory-related errors.
 - **Incremental refactoring**: Convert legacy projects one module at a time. Untouched code remains functional.
 - **Interoperable**: Plays well with third-party libraries, legacy components, and multi-module structures.
 - **Small footprint**: Less than 300 lines of logic — lean, elegant, and purpose-built.
