@@ -15,11 +15,9 @@
 
 ## Why C\*?
 
-The C programming language is powerful, but inherently unsafe when it comes to dynamic memory management. **C\*** helps eliminate common memory-related issues such as:
+The C programming language is powerful, but inherently unsafe when it comes to dynamic memory management. **C\*** helps reduce common memory-related issues such as:
 
 - Buffer overflows
-- Use-after-free
-- Memory leaks
 - Invalid memory access
 
 ### Key Motivations
