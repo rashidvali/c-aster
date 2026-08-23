@@ -1,5 +1,5 @@
 > **🚀 Public Release Announcement**  
-> This is the initial public release of **C\*** (C aster) — a memory-safe micro-library for C.  
+> This is the initial public release of **C\*** (C aster) — a memory-safety micro-library for C.  
 > We welcome your feedback, testing, and contributions as the project grows.  
 > See [CONTRIBUTING.md](./contributing.md) to get involved.
 
@@ -9,7 +9,7 @@
 
 # C\* (C aster) 
 
-**C\*** (pronounced "C aster") is a memory-safe micro library for C, with zero OS or compiler dependencies. Designed for simplicity, modularity, and rapid adoption, it empowers developers to fortify existing projects without full rewrites. It introduces a lightweight memory safety framework, allowing developers to write safer C code without giving up control or performance.
+**C\*** (pronounced "C aster") is a memory-safety micro library for C, with zero OS or compiler dependencies. Designed for simplicity, modularity, and rapid adoption, it empowers developers to fortify existing projects without full rewrites. It introduces a lightweight memory safety framework, allowing developers to write safer C code without giving up control or performance.
 
 ---
 
@@ -214,7 +214,7 @@ This project does not currently maintain a formal roadmap. Planned improvements 
 
 ## Disclaimer
 
-Developers are expected to avoid unsafe native functions and use C\* safe alternatives instead. A mapping reference between unsafe and safe APIs is provided. C\* maintains a registry of available memory chunks, offering runtime validation and safety. This introduces a minor performance overhead, which is the tradeoff for improved reliability. While C\* greatly improves memory safety, it is not a full memory-safe language replacement. Use it as a building block toward safer systems within the power and constraints of C.
+Developers are expected to avoid unsafe native functions and use C\* safe alternatives instead. A mapping reference between unsafe and safe APIs is provided. C\* maintains a registry of available memory chunks, offering runtime validation and safety. This introduces a minor performance overhead, which is the tradeoff for improved reliability. While C\* greatly improves memory safety, it is not a full memory-safety language replacement. Use it as a building block toward safer systems within the power and constraints of C.
 For Windows/Linux multithreaded environments, safe_malloc and safe_free are not thread-safe by default. You can wrap calls with your own mutex or fork the library to add POSIX/Win32 locking if needed.
 
 ---
