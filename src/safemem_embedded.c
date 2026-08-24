@@ -173,38 +173,46 @@ void* safe_malloc(size_t size) {
 }
 
 // === Free ===
-void safe_free(void* ptr, size_t size) {
-    if (!ptr || size == 0) return;
-    safemem_lock();
-    FreeBlock* new_block = alloc_node();
-    if (!new_block) {
-        SAFE_LOGE(TAG_MEM, "Free failed: no node available\n");
-        safemem_unlock();
+void safe_free(void* ptr) {
+    if (!ptr)
         return;
-    }
-    new_block->addr = ptr;
-    new_block->size = size;
-    new_block->next = NULL;
 
-    FreeBlock* prev = NULL, * curr = free_list;
-    while (curr && curr->addr < ptr) {
+    safemem_lock();
+
+    FreeBlock* prev = NULL;
+    FreeBlock* curr = allocated_list;
+
+    /*
+     * safe_free() only accepts the exact start address
+     * of a currently registered allocation.
+     */
+    while (curr && curr->addr != ptr) {
         prev = curr;
         curr = curr->next;
     }
-    new_block->next = curr;
-    if (prev) prev->next = new_block;
-    else free_list = new_block;
 
-    if (curr && (uint8_t*)new_block->addr + new_block->size == curr->addr) {
-        new_block->size += curr->size;
-        new_block->next = curr->next;
-        free_node(curr);
+    if (!curr) {
+        SAFE_LOGE(TAG_MEM,
+                  "Free failed: pointer is not a valid allocation\n");
+        safemem_unlock();
+        return;
     }
-    if (prev && (uint8_t*)prev->addr + prev->size == new_block->addr) {
-        prev->size += new_block->size;
-        prev->next = new_block->next;
-        free_node(new_block);
-    }
+
+    /*
+     * Remove the allocation from the sorted allocation list.
+     */
+    if (prev)
+        prev->next = curr->next;
+    else
+        allocated_list = curr->next;
+
+    /*
+     * Return its metadata node to the node pool.
+     * The memory itself automatically becomes available
+     * because it is now a gap between allocations.
+     */
+    free_node(curr);
+
     safemem_unlock();
 }
 
