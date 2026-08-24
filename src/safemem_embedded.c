@@ -97,18 +97,11 @@ void safemem_init() {
 
     for (int i = 0; i < C_ASTR_CONFIG_MAX_BLOCKS - 1; ++i)
         block_pool[i].next = &block_pool[i + 1];
-    block_pool[C_ASTR_CONFIG_MAX_BLOCKS - 1].next = NULL;
-    node_pool = &block_pool[0];
 
-    FreeBlock* initial = alloc_node();
-    if (!initial) {
-        SAFE_LOGE(TAG_MEM, "Init failed: no nodes available\n");
-        return;
-    }
-    initial->addr = arena;
-    initial->size = C_ASTR_CONFIG_ARENA_SIZE;
-    initial->next = NULL;
-    free_list = initial;
+    block_pool[C_ASTR_CONFIG_MAX_BLOCKS - 1].next = NULL;
+
+    node_pool = &block_pool[0];
+	allocated_list = NULL;
 }
 
 // === Allocation ===
