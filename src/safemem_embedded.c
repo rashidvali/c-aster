@@ -106,67 +106,70 @@ void safemem_init() {
 
 // === Allocation ===
 void* safe_malloc(size_t size) {
+    if (size == 0 || size > C_ASTR_CONFIG_ARENA_SIZE)
+        return NULL;
+
     safemem_lock();
 
+    uint8_t* candidate = arena;
     FreeBlock* prev = NULL;
-    FreeBlock* curr = free_list;
+    FreeBlock* curr = allocated_list;
 
+    /*
+     * allocated_list is kept sorted by address.
+     * Find the first gap large enough for this allocation.
+     */
     while (curr) {
-        if (curr->size >= size) {
-            void* allocated = curr->addr;
-            FreeBlock* allocated_block;
+        uint8_t* curr_addr = (uint8_t*)curr->addr;
 
-            if (curr->size == size) {
-                /*
-                 * Exact fit: remove this node from the free list and
-                 * reuse the same metadata node for the allocation.
-                 */
-                if (prev)
-                    prev->next = curr->next;
-                else
-                    free_list = curr->next;
+        if ((size_t)(curr_addr - candidate) >= size)
+            break;
 
-                allocated_block = curr;
-            }
-            else {
-                /*
-                 * Partial allocation: the free block remains in the
-                 * free list, so obtain another metadata node to track
-                 * the allocated region.
-                 */
-                allocated_block = alloc_node();
-                if (!allocated_block) {
-                    SAFE_LOGE(TAG_MEM,
-                              "Allocation of %zu bytes failed: no metadata node available\n",
-                              size);
-                    safemem_unlock();
-                    return NULL;
-                }
-
-                curr->addr = (uint8_t*)curr->addr + size;
-                curr->size -= size;
-            }
-
-            /*
-             * Register the allocation so its individual boundaries
-             * can be validated later.
-             */
-            allocated_block->addr = allocated;
-            allocated_block->size = size;
-            allocated_block->next = allocated_list;
-            allocated_list = allocated_block;
-
-            safemem_unlock();
-            return allocated;
-        }
-
+        candidate = curr_addr + curr->size;
         prev = curr;
         curr = curr->next;
     }
 
-    SAFE_LOGE(TAG_MEM, "Allocation of %zu bytes failed\n", size);
+    /*
+     * If no suitable gap was found between allocations,
+     * candidate points immediately after the last allocation.
+     */
+    uint8_t* arena_end = arena + C_ASTR_CONFIG_ARENA_SIZE;
+
+    if ((size_t)(arena_end - candidate) < size) {
+        SAFE_LOGE(TAG_MEM,
+                  "Allocation of %zu bytes failed: insufficient memory\n",
+                  size);
+        safemem_unlock();
+        return NULL;
+    }
+
+    FreeBlock* block = alloc_node();
+
+    if (!block) {
+        SAFE_LOGE(TAG_MEM,
+                  "Allocation of %zu bytes failed: no metadata node available\n",
+                  size);
+        safemem_unlock();
+        return NULL;
+    }
+
+    block->addr = candidate;
+    block->size = size;
+
+    /*
+     * Insert into allocated_list at the gap we found,
+     * preserving address order.
+     */
+    block->next = curr;
+
+    if (prev)
+        prev->next = block;
+    else
+        allocated_list = block;
+
     safemem_unlock();
-    return NULL;
+    return candidate;
 }
 
 // === Free ===
