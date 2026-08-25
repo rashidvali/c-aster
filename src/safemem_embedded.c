@@ -267,8 +267,7 @@ char* safe_strdup(const char* src) {
 
 // === Accessors ===
 #define VALIDATE(ptr, size) \
-    (((uintptr_t)(ptr) >= (uintptr_t)arena) && \
-     ((uintptr_t)(ptr) + (size) <= (uintptr_t)(arena + C_ASTR_CONFIG_ARENA_SIZE)))
+    allocation_contains_range((ptr), (size))
 
 int set_mem_int(int* p, int v) {
     if (VALIDATE(p, sizeof(int))) { *p = v; return 1; }
