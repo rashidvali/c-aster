@@ -31,6 +31,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <string.h>
+#include <stdbool.h>
 #include "safemem_embedded.h"
 #include "safe_log.h"       // ?? Must come before using SAFE_LOGE
 
@@ -81,6 +82,38 @@ static FreeBlock* alloc_node() {
 static void free_node(FreeBlock* node) {
     node->next = node_pool;
     node_pool = node;
+}
+
+// === Helpers ===
+static bool allocation_contains_range(const void* ptr, size_t size) {
+    if (!ptr)
+        return false;
+
+    uintptr_t address = (uintptr_t)ptr;
+
+    FreeBlock* curr = allocated_list;
+
+    while (curr) {
+        uintptr_t start = (uintptr_t)curr->addr;
+        uintptr_t offset;
+
+        if (address >= start) {
+            offset = address - start;
+
+            /*
+             * Avoid address arithmetic overflow by comparing
+             * sizes rather than computing ptr + size.
+             */
+            if (offset <= curr->size &&
+                size <= curr->size - offset) {
+                return true;
+            }
+        }
+
+        curr = curr->next;
+    }
+
+    return false;
 }
 
 // === Init ===
@@ -296,12 +329,20 @@ int safe_memset(void* p, int val, size_t len) {
 
 void safemem_report() {
     safemem_lock();
-    SAFE_LOGI(TAG_MEM, "=== Free Blocks ===\n");
-    FreeBlock* curr = free_list;
+
+    SAFE_LOGI(TAG_MEM, "=== Allocated Blocks ===\n");
+
+    FreeBlock* curr = allocated_list;
     while (curr) {
-        SAFE_LOGI(TAG_MEM, "  Addr: %p, Size: %zu\n", curr->addr, curr->size);
+        SAFE_LOGI(TAG_MEM,
+                  "  Addr: %p, Size: %zu\n",
+                  curr->addr,
+                  curr->size);
+
         curr = curr->next;
     }
-    SAFE_LOGI(TAG_MEM, "===================\n");
+
+    SAFE_LOGI(TAG_MEM, "========================\n");
+
     safemem_unlock();
 }
