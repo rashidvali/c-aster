@@ -1,4 +1,9 @@
 idf_component_register(
-    SRCS "src/safemem_embedded.c"
-    INCLUDE_DIRS "src"
+    SRCS
+        "src/safemem_embedded.c"
+        "src/safe_log.c"
+        "tests/safemem_tests.c"
+    INCLUDE_DIRS
+        "src"
+        "tests"
 )
