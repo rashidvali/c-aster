@@ -28,6 +28,8 @@
 #  endif
 #endif
 
+#include "c_ast_defaults.h"
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <string.h>

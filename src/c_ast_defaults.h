@@ -1,0 +1,9 @@
+#pragma once
+
+#ifndef C_ASTR_CONFIG_ARENA_SIZE
+#define C_ASTR_CONFIG_ARENA_SIZE 1024
+#endif
+
+#ifndef C_ASTR_CONFIG_MAX_BLOCKS
+#define C_ASTR_CONFIG_MAX_BLOCKS 32
+#endif
