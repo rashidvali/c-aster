@@ -34,6 +34,7 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include "safemem_embedded.h"
 #include "safe_log.h"       // ?? Must come before using SAFE_LOGE
 
@@ -53,7 +54,9 @@ static SemaphoreHandle_t safemem_mutex;
 
 
 
-static uint8_t arena[C_ASTR_CONFIG_ARENA_SIZE];
+static _Alignas(max_align_t)
+uint8_t arena[C_ASTR_CONFIG_ARENA_SIZE];
+
 static FreeBlock block_pool[C_ASTR_CONFIG_MAX_BLOCKS];
 static FreeBlock* node_pool = NULL;
 static FreeBlock* allocated_list = NULL;
@@ -118,6 +121,16 @@ static bool allocation_contains_range(const void* ptr, size_t size) {
     return false;
 }
 
+static uint8_t* align_address(uint8_t* ptr)
+{
+    const uintptr_t alignment = _Alignof(max_align_t);
+    uintptr_t address = (uintptr_t)ptr;
+
+    address = (address + alignment - 1) & ~(alignment - 1);
+
+    return (uint8_t*)address;
+}
+
 // === Init ===
 void safemem_init() {
     // SAFE_LOGI("CONFIG", "C_ASTR_CONFIG_FREERTOS_USE = %d", C_ASTR_CONFIG_FREERTOS_USE);
@@ -146,24 +159,24 @@ void* safe_malloc(size_t size) {
 
     safemem_lock();
 
-    uint8_t* candidate = arena;
-    FreeBlock* prev = NULL;
-    FreeBlock* curr = allocated_list;
+	uint8_t* candidate = align_address(arena);
+	FreeBlock* prev = NULL;
+	FreeBlock* curr = allocated_list;
 
-    /*
-     * allocated_list is kept sorted by address.
-     * Find the first gap large enough for this allocation.
-     */
-    while (curr) {
-        uint8_t* curr_addr = (uint8_t*)curr->addr;
+	while (curr) {
+		uint8_t* curr_addr = (uint8_t*)curr->addr;
 
-        if ((size_t)(curr_addr - candidate) >= size)
-            break;
+		candidate = align_address(candidate);
 
-        candidate = curr_addr + curr->size;
-        prev = curr;
-        curr = curr->next;
-    }
+		if ((size_t)(curr_addr - candidate) >= size)
+			break;
+
+		candidate = curr_addr + curr->size;
+		prev = curr;
+		curr = curr->next;
+	}
+
+	candidate = align_address(candidate);
 
     /*
      * If no suitable gap was found between allocations,

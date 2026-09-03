@@ -154,7 +154,7 @@ static void test_fragmentation(void)
      * 8 bytes cannot fit into b's old 5-byte gap,
      * so first-fit must skip it and reuse d's gap.
      */
-    uint8_t *f = safe_malloc(8);
+    uint8_t *f = safe_malloc(12);
 
     printf("f = %p\n", (void *)f);
 
@@ -202,14 +202,75 @@ static void test_metadata_exhaustion(void)
         safe_free(blocks[i]);
 }
 
+static void test_allocation_alignment(void)
+{
+    printf("\n--- Allocation alignment test ---\n");
+
+    safemem_init();
+
+    void *a = safe_malloc(1);
+    void *b = safe_malloc(sizeof(int));
+    void *c = safe_malloc(sizeof(float));
+
+    printf("a = %p\n", a);
+    printf("b = %p\n", b);
+    printf("c = %p\n", c);
+
+    printf("int allocation aligned: %s\n",
+           ((uintptr_t)b % _Alignof(int)) == 0 ? "PASS" : "FAIL");
+
+    printf("float allocation aligned: %s\n",
+           ((uintptr_t)c % _Alignof(float)) == 0 ? "PASS" : "FAIL");
+
+    safe_free(a);
+    safe_free(b);
+    safe_free(c);
+}
+
+static void test_aligned_fragmentation(void)
+{
+    printf("\n--- Aligned fragmentation test ---\n");
+
+    safemem_init();
+
+    uint8_t *a = safe_malloc(1);
+    uint8_t *b = safe_malloc(8);
+    uint8_t *c = safe_malloc(1);
+    uint8_t *d = safe_malloc(8);
+
+    printf("a = %p\n", (void *)a);
+    printf("b = %p\n", (void *)b);
+    printf("c = %p\n", (void *)c);
+    printf("d = %p\n", (void *)d);
+
+    safe_free(b);
+
+    uint8_t *e = safe_malloc(8);
+
+    printf("e = %p\n", (void *)e);
+
+    printf("Freed aligned gap reused: %s\n",
+           e == b ? "PASS" : "FAIL");
+
+    printf("Reused allocation aligned: %s\n",
+           ((uintptr_t)e % _Alignof(max_align_t)) == 0 ? "PASS" : "FAIL");
+
+    safe_free(a);
+    safe_free(c);
+    safe_free(d);
+    safe_free(e);
+}
+
 void safemem_run_tests(void)
 {
-    printf("\n=== C* safemem tests === (6)\n");
+    printf("\n=== C* safemem tests === (5)\n");
 
     // test_allocation_boundary();  // 1
     // test_mem_freeing();          // 2
     // test_use_after_free();       // 3
     // test_invalid_free();         // 4
-    // test_fragmentation();        // 5
-    test_metadata_exhaustion();     // 6
+    test_fragmentation();        // 5
+    // test_metadata_exhaustion();     // 6
+	// test_allocation_alignment(); // 7
+	// test_aligned_fragmentation(); // 8
 }
