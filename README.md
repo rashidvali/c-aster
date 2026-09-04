@@ -113,18 +113,11 @@ Create and add to your directory ```c_ast_config.h``` file:
 
 #pragma once
 
-// 0 = Windows/Linux environment without FreeRTOS mutex support
-// 1 = Embedded environment with FreeRTOS mutex support
-// #define C_ASTR_CONFIG_FREERTOS_USE 0 
-#define C_ASTR_CONFIG_FREERTOS_USE 1 
-
 #define C_ASTR_CONFIG_ARENA_SIZE 2048
 #define C_ASTR_CONFIG_MAX_BLOCKS 64
 ```
 
 The micro-library requires minimal configuration using three self-explanatory macros.
-
->You can choose between an embedded environment with FreeRTOS or a Windows/Linux OS by setting `C_ASTR_CONFIG_FREERTOS_USE` to 1 or 0, respectively.
 
 > You can change `C_ASTR_CONFIG_ARENA_SIZE` and `C_ASTR_CONFIG_MAX_BLOCKS` to suit your memory model.
 

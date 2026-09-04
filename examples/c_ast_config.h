@@ -23,10 +23,5 @@
 
 #pragma once
 
-// 0 = Windows/Linux environment without FreeRTOS mutex support
-// 1 = Embedded environment with FreeRTOS mutex support
-#define C_ASTR_CONFIG_FREERTOS_USE 0 
-// #define C_ASTR_CONFIG_FREERTOS_USE 1 
-
 #define C_ASTR_CONFIG_ARENA_SIZE 2048
 #define C_ASTR_CONFIG_MAX_BLOCKS 64

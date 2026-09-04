@@ -38,11 +38,9 @@
 #include "safemem_embedded.h"
 #include "safe_log.h"       // ?? Must come before using SAFE_LOGE
 
-#if C_ASTR_CONFIG_FREERTOS_USE
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 static SemaphoreHandle_t safemem_mutex;
-#endif
 
 #ifndef C_ASTR_CONFIG_ARENA_SIZE
 #define C_ASTR_CONFIG_ARENA_SIZE 1024
@@ -65,15 +63,11 @@ static const char *TAG_MEM = "MEM";
 
 // === Locking for RTOS ===
 void safemem_lock() {
-#if C_ASTR_CONFIG_FREERTOS_USE
     if (safemem_mutex) xSemaphoreTake(safemem_mutex, portMAX_DELAY);
-#endif
 }
 
 void safemem_unlock() {
-#if C_ASTR_CONFIG_FREERTOS_USE
     if (safemem_mutex) xSemaphoreGive(safemem_mutex);
-#endif
 }
 
 // === Node Pool ===
@@ -133,15 +127,8 @@ static uint8_t* align_address(uint8_t* ptr)
 
 // === Init ===
 void safemem_init() {
-    // SAFE_LOGI("CONFIG", "C_ASTR_CONFIG_FREERTOS_USE = %d", C_ASTR_CONFIG_FREERTOS_USE);
-#if C_ASTR_CONFIG_FREERTOS_USE
-    // SAFE_LOGI("CONFIG", "1: C_ASTR_CONFIG_FREERTOS_USE = %d", C_ASTR_CONFIG_FREERTOS_USE);
     safemem_mutex = xSemaphoreCreateMutex();
     SAFE_LOGI(TAG_MEM, "Semaphore created for safemem\n");
-#else
-    // SAFE_LOGI("CONFIG", "0: C_ASTR_CONFIG_FREERTOS_USE = %d", C_ASTR_CONFIG_FREERTOS_USE);
-    SAFE_LOGI(TAG_MEM, "No mutex support, using simple memory management\n");
-#endif
 
     for (int i = 0; i < C_ASTR_CONFIG_MAX_BLOCKS - 1; ++i)
         block_pool[i].next = &block_pool[i + 1];
