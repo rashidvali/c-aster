@@ -42,16 +42,6 @@
 #include "freertos/semphr.h"
 static SemaphoreHandle_t safemem_mutex;
 
-#ifndef C_ASTR_CONFIG_ARENA_SIZE
-#define C_ASTR_CONFIG_ARENA_SIZE 1024
-#endif
-
-#ifndef C_ASTR_CONFIG_MAX_BLOCKS
-#define C_ASTR_CONFIG_MAX_BLOCKS 32
-#endif
-
-
-
 static _Alignas(max_align_t)
 uint8_t arena[C_ASTR_CONFIG_ARENA_SIZE];
 
