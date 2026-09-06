@@ -37,11 +37,11 @@
 #include <stdint.h>
 
 // === TYPES ===
-typedef struct FreeBlock {
+typedef struct AllocationBlock {
     void* addr;
     size_t size;
-    struct FreeBlock* next;
-} FreeBlock;
+    struct AllocationBlock* next;
+} AllocationBlock;
 
 // === API ===
 void safemem_init();

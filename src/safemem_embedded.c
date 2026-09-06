@@ -45,9 +45,9 @@ static SemaphoreHandle_t safemem_mutex;
 static _Alignas(max_align_t)
 uint8_t arena[C_ASTR_CONFIG_ARENA_SIZE];
 
-static FreeBlock block_pool[C_ASTR_CONFIG_MAX_BLOCKS];
-static FreeBlock* node_pool = NULL;
-static FreeBlock* allocated_list = NULL;
+static AllocationBlock block_pool[C_ASTR_CONFIG_MAX_BLOCKS];
+static AllocationBlock* node_pool = NULL;
+static AllocationBlock* allocated_list = NULL;
 
 static const char *TAG_MEM = "MEM";
 
@@ -61,14 +61,14 @@ void safemem_unlock() {
 }
 
 // === Node Pool ===
-static FreeBlock* alloc_node() {
+static AllocationBlock* alloc_node() {
     if (!node_pool) return NULL;
-    FreeBlock* node = node_pool;
+    AllocationBlock* node = node_pool;
     node_pool = node_pool->next;
     return node;
 }
 
-static void free_node(FreeBlock* node) {
+static void free_node(AllocationBlock* node) {
     node->next = node_pool;
     node_pool = node;
 }
@@ -80,7 +80,7 @@ static bool allocation_contains_range(const void* ptr, size_t size) {
 
     uintptr_t address = (uintptr_t)ptr;
 
-    FreeBlock* curr = allocated_list;
+    AllocationBlock* curr = allocated_list;
 
     while (curr) {
         uintptr_t start = (uintptr_t)curr->addr;
@@ -137,8 +137,8 @@ void* safe_malloc(size_t size) {
     safemem_lock();
 
 	uint8_t* candidate = align_address(arena);
-	FreeBlock* prev = NULL;
-	FreeBlock* curr = allocated_list;
+	AllocationBlock* prev = NULL;
+	AllocationBlock* curr = allocated_list;
 
 	while (curr) {
 		uint8_t* curr_addr = (uint8_t*)curr->addr;
@@ -169,7 +169,7 @@ void* safe_malloc(size_t size) {
         return NULL;
     }
 
-    FreeBlock* block = alloc_node();
+    AllocationBlock* block = alloc_node();
 
     if (!block) {
         SAFE_LOGE(TAG_MEM,
@@ -204,8 +204,8 @@ void safe_free(void* ptr) {
 
     safemem_lock();
 
-    FreeBlock* prev = NULL;
-    FreeBlock* curr = allocated_list;
+    AllocationBlock* prev = NULL;
+    AllocationBlock* curr = allocated_list;
 
     /*
      * safe_free() only accepts the exact start address
@@ -323,7 +323,7 @@ void safemem_report() {
 
     SAFE_LOGI(TAG_MEM, "=== Allocated Blocks ===\n");
 
-    FreeBlock* curr = allocated_list;
+    AllocationBlock* curr = allocated_list;
     while (curr) {
         SAFE_LOGI(TAG_MEM,
                   "  Addr: %p, Size: %zu\n",

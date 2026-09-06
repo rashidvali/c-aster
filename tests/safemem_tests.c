@@ -263,14 +263,14 @@ static void test_aligned_fragmentation(void)
 
 void safemem_run_tests(void)
 {
-    printf("\n=== C* safemem tests === (5)\n");
+    printf("\n=== C* safemem tests === (7)\n");
 
     // test_allocation_boundary();  // 1
     // test_mem_freeing();          // 2
     // test_use_after_free();       // 3
     // test_invalid_free();         // 4
-    test_fragmentation();        // 5
+    // test_fragmentation();        // 5
     // test_metadata_exhaustion();     // 6
-	// test_allocation_alignment(); // 7
+	test_allocation_alignment(); // 7
 	// test_aligned_fragmentation(); // 8
 }
