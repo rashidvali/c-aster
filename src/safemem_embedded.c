@@ -105,9 +105,8 @@ static bool allocation_contains_range(const void* ptr, size_t size) {
     return false;
 }
 
-static uint8_t* align_address(uint8_t* ptr)
+static uint8_t* align_address(uint8_t* ptr, size_t alignment)
 {
-    const uintptr_t alignment = _Alignof(max_align_t);
     uintptr_t address = (uintptr_t)ptr;
 
     address = (address + alignment - 1) & ~(alignment - 1);
@@ -130,20 +129,24 @@ void safemem_init() {
 }
 
 // === Allocation ===
-void* safe_malloc(size_t size) {
+void* c_ast_allocate(size_t size, size_t alignment)
+{
     if (size == 0 || size > C_ASTR_CONFIG_ARENA_SIZE)
+        return NULL;
+
+    if (alignment == 0 || (alignment & (alignment - 1)) != 0)
         return NULL;
 
     safemem_lock();
 
-	uint8_t* candidate = align_address(arena);
+	uint8_t* candidate = align_address(arena, alignment);
 	AllocationBlock* prev = NULL;
 	AllocationBlock* curr = allocated_list;
 
 	while (curr) {
 		uint8_t* curr_addr = (uint8_t*)curr->addr;
 
-		candidate = align_address(candidate);
+		candidate = align_address(candidate, alignment);
 
 		if ((size_t)(curr_addr - candidate) >= size)
 			break;
@@ -153,7 +156,7 @@ void* safe_malloc(size_t size) {
 		curr = curr->next;
 	}
 
-	candidate = align_address(candidate);
+	candidate = align_address(candidate, alignment);
 
     /*
      * If no suitable gap was found between allocations,
@@ -195,6 +198,11 @@ void* safe_malloc(size_t size) {
 
     safemem_unlock();
     return candidate;
+}
+
+void* safe_malloc(size_t size)
+{
+    return c_ast_allocate(size, _Alignof(max_align_t));
 }
 
 // === Free ===
