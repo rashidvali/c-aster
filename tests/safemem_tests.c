@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "safemem_embedded.h"
 #include "safemem_tests.h"
