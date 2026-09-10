@@ -3,5 +3,7 @@
 
 int *alnInt(int value);
 float *alnFloat(float value);
+char *alnChar(char value);
+char *alnStr(const char *value);
 
 #endif

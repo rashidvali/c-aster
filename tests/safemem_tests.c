@@ -211,9 +211,10 @@ static void test_allocation_alignment(void)
 
     safemem_init();
 
-	void *a = c_ast_allocate(1, _Alignof(char));
+	char *a = alnChar('A');
 	int *b = alnInt(123);
 	float *c = alnFloat(3.14f);
+	char *d = alnStr("C*");
 
     printf("a = %p\n", a);
     printf("b = %p\n", b);
@@ -221,6 +222,9 @@ static void test_allocation_alignment(void)
 
     printf("char allocation aligned: %s\n",
        ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL"); //--
+	
+	printf("char allocation initialized: %s\n",
+       (a != NULL && *a == 'A') ? "PASS" : "FAIL");
 
 	printf("int allocation aligned: %s\n", 
        ((uintptr_t)b % _Alignof(int)) == 0 ? "PASS" : "FAIL"); //--
@@ -234,9 +238,13 @@ static void test_allocation_alignment(void)
 	printf("float allocation initialized: %s\n",
        (c != NULL && *c == 3.14f) ? "PASS" : "FAIL");
 
+	printf("string allocation initialized: %s\n",
+       (d != NULL && strcmp(d, "C*") == 0) ? "PASS" : "FAIL"); //--
+
     safe_free(a);
     safe_free(b);
     safe_free(c);
+	safe_free(d);
 }
 
 static void test_aligned_fragmentation(void)
