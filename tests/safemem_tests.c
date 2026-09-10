@@ -213,20 +213,26 @@ static void test_allocation_alignment(void)
 
 	void *a = c_ast_allocate(1, _Alignof(char));
 	int *b = alnInt(123);
-	void *c = c_ast_allocate(sizeof(float), _Alignof(float));
+	float *c = alnFloat(3.14f);
 
     printf("a = %p\n", a);
     printf("b = %p\n", b);
     printf("c = %p\n", c);
 
     printf("char allocation aligned: %s\n",
-       ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL");
+       ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL"); //--
+
+	printf("int allocation aligned: %s\n", 
+       ((uintptr_t)b % _Alignof(int)) == 0 ? "PASS" : "FAIL"); //--
 
 	printf("int allocation initialized: %s\n",
        (b != NULL && *b == 123) ? "PASS" : "FAIL");
 
 	printf("float allocation aligned: %s\n",
-       ((uintptr_t)c % _Alignof(float)) == 0 ? "PASS" : "FAIL");
+       ((uintptr_t)c % _Alignof(float)) == 0 ? "PASS" : "FAIL"); //--
+
+	printf("float allocation initialized: %s\n",
+       (c != NULL && *c == 3.14f) ? "PASS" : "FAIL");
 
     safe_free(a);
     safe_free(b);

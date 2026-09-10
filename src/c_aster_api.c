@@ -12,3 +12,16 @@ int *alnInt(int value)
 
     return ptr;
 }
+
+float *alnFloat(float value)
+{
+    float *ptr = (float *)c_ast_allocate(sizeof(float), _Alignof(float));
+
+    if (ptr == NULL)
+        return NULL;
+
+    *ptr = value;
+
+    return ptr;
+}
+
