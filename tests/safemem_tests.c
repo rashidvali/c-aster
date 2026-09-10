@@ -208,19 +208,22 @@ static void test_allocation_alignment(void)
 
     safemem_init();
 
-    void *a = safe_malloc(1);
-    void *b = safe_malloc(sizeof(int));
-    void *c = safe_malloc(sizeof(float));
+	void *a = c_ast_allocate(1, _Alignof(char));
+	void *b = c_ast_allocate(sizeof(int), _Alignof(int));
+	void *c = c_ast_allocate(sizeof(float), _Alignof(float));
 
     printf("a = %p\n", a);
     printf("b = %p\n", b);
     printf("c = %p\n", c);
 
-    printf("int allocation aligned: %s\n",
-           ((uintptr_t)b % _Alignof(int)) == 0 ? "PASS" : "FAIL");
+    printf("char allocation aligned: %s\n",
+       ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL");
 
-    printf("float allocation aligned: %s\n",
-           ((uintptr_t)c % _Alignof(float)) == 0 ? "PASS" : "FAIL");
+	printf("int allocation aligned: %s\n",
+       ((uintptr_t)b % _Alignof(int)) == 0 ? "PASS" : "FAIL");
+
+	printf("float allocation aligned: %s\n",
+       ((uintptr_t)c % _Alignof(float)) == 0 ? "PASS" : "FAIL");
 
     safe_free(a);
     safe_free(b);
