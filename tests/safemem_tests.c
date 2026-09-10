@@ -3,7 +3,9 @@
 
 #include "safemem_embedded.h"
 #include "safemem_tests.h"
-// #include "c_ast_config.h"
+
+#include "c_aster_api.h"
+
 
 #ifdef __has_include
 #  if __has_include("c_ast_config.h")
@@ -209,7 +211,7 @@ static void test_allocation_alignment(void)
     safemem_init();
 
 	void *a = c_ast_allocate(1, _Alignof(char));
-	void *b = c_ast_allocate(sizeof(int), _Alignof(int));
+	int *b = alnInt(123);
 	void *c = c_ast_allocate(sizeof(float), _Alignof(float));
 
     printf("a = %p\n", a);
@@ -219,8 +221,8 @@ static void test_allocation_alignment(void)
     printf("char allocation aligned: %s\n",
        ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL");
 
-	printf("int allocation aligned: %s\n",
-       ((uintptr_t)b % _Alignof(int)) == 0 ? "PASS" : "FAIL");
+	printf("int allocation initialized: %s\n",
+       (b != NULL && *b == 123) ? "PASS" : "FAIL");
 
 	printf("float allocation aligned: %s\n",
        ((uintptr_t)c % _Alignof(float)) == 0 ? "PASS" : "FAIL");
