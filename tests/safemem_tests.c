@@ -5,6 +5,7 @@
 #include "safemem_tests.h"
 
 #include "c_aster_api.h"
+#include "c_aster_api.h"
 
 
 #ifdef __has_include
