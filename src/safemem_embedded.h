@@ -49,7 +49,6 @@ void safemem_lock();
 void safemem_unlock();
 void* c_ast_allocate(size_t size, size_t alignment);
 void* safe_malloc(size_t size);
-void safe_free(void* ptr);
 char* safe_strdup(const char* src);
 
 // === Safe Accessors ===

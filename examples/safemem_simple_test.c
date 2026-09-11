@@ -31,8 +31,8 @@ void test_memory_cycle() {
 
         SAFE_LOGI("TEST", "Iteration: #%d", i);
 
-        safe_free(text, strlen(text) + 1);
-        safe_free(copy, strlen(copy) + 1);
+        dispose(text, strlen(text) + 1);
+        dispose(copy, strlen(copy) + 1);
     }
 
     SAFE_LOGI("TEST", "Memory test completed.");
@@ -57,7 +57,7 @@ void simulate_workload() {
         char* copied = safe_strdup(buffer);
         if (copied == NULL) {
             SAFE_LOGE("TEST", "Failed to duplicate string at %d", i);
-            safe_free(num, sizeof(int));
+            dispose(num, sizeof(int));
             continue;
         }
 
@@ -68,8 +68,8 @@ void simulate_workload() {
         }
 
         // Free memory
-        safe_free(copied, strlen(copied) + 1);
-        safe_free(num, sizeof(int));
+        dispose(copied, strlen(copied) + 1);
+        dispose(num, sizeof(int));
     }
 
     SAFE_LOGI("TEST", "All memory cycles completed.");

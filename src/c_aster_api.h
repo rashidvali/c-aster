@@ -8,5 +8,6 @@ char *alnStr(const char *value);
 int *alnIntArr(size_t count);
 float *alnFloatArr(size_t count);
 char *alnCharArr(size_t count);
+void dispose(void* ptr);
 
 #endif

@@ -40,8 +40,8 @@ static void test_allocation_boundary(void)
     printf("15-byte write crossing allocation boundary: %s\n",
            overflow_result ? "FAIL" : "PASS");
 
-    safe_free(a);
-    safe_free(b);
+    dispose(a);
+    dispose(b);
 }
 
 static void test_mem_freeing(void)
@@ -58,7 +58,7 @@ static void test_mem_freeing(void)
     printf("b = %p\n", (void *)b);
     printf("c = %p\n", (void *)c);
 
-    safe_free(b);
+    dispose(b);
 
     uint8_t *d = safe_malloc(8);
 
@@ -67,9 +67,9 @@ static void test_mem_freeing(void)
     printf("Freed gap reused: %s\n",
            d == b ? "PASS" : "FAIL");
 
-    safe_free(a);
-    safe_free(c);
-    safe_free(d);
+    dispose(a);
+    dispose(c);
+    dispose(d);
 }
 
 static void test_use_after_free(void)
@@ -83,7 +83,7 @@ static void test_use_after_free(void)
 
     int before_free = set_mem_block(p, data, sizeof(data));
 
-    safe_free(p);
+    dispose(p);
 
     int after_free = set_mem_block(p, data, sizeof(data));
 
@@ -104,9 +104,9 @@ static void test_invalid_free(void)
 
     /*
      * An interior pointer is not an allocation start
-     * and must not be accepted by safe_free().
+     * and must not be accepted by dispose().
      */
-    safe_free(p + 1);
+    dispose(p + 1);
 
     uint8_t data[10] = {0};
 
@@ -119,8 +119,8 @@ static void test_invalid_free(void)
      * Free the actual allocation, then try freeing
      * the same pointer again.
      */
-    safe_free(p);
-    safe_free(p);
+    dispose(p);
+    dispose(p);
 
     int still_freed = set_mem_block(p, data, sizeof(data));
 
@@ -152,8 +152,8 @@ static void test_fragmentation(void)
      *   b: 5 bytes
      *   d: 15 bytes
      */
-    safe_free(b);
-    safe_free(d);
+    dispose(b);
+    dispose(d);
 
     /*
      * 8 bytes cannot fit into b's old 5-byte gap,
@@ -169,10 +169,10 @@ static void test_fragmentation(void)
     printf("First suitable gap reused: %s\n",
            f == d ? "PASS" : "FAIL");
 
-    safe_free(a);
-    safe_free(c);
-    safe_free(e);
-    safe_free(f);
+    dispose(a);
+    dispose(c);
+    dispose(e);
+    dispose(f);
 }
 
 static void test_metadata_exhaustion(void)
@@ -204,7 +204,7 @@ static void test_metadata_exhaustion(void)
            extra == NULL ? "PASS" : "FAIL");
 
     for (int i = 0; i < allocated; ++i)
-        safe_free(blocks[i]);
+        dispose(blocks[i]);
 }
 
 static void test_allocation_alignment(void)
@@ -243,10 +243,10 @@ static void test_allocation_alignment(void)
 	printf("string allocation initialized: %s\n",
        (d != NULL && strcmp(d, "C* - C-aster") == 0) ? "PASS" : "FAIL"); //--
 
-    safe_free(a);
-    safe_free(b);
-    safe_free(c);
-	safe_free(d);
+    dispose(a);
+    dispose(b);
+    dispose(c);
+	dispose(d);
 
 	// =================
 	int *int_arr = alnIntArr(4);
@@ -270,7 +270,7 @@ static void test_allocation_alignment(void)
 	printf("int array zero-initialized: %s\n",
 		int_arr_zero ? "PASS" : "FAIL");
 
-	safe_free(int_arr);		
+	dispose(int_arr);		
 
 	// ==================
 	float *float_arr = alnFloatArr(4);
@@ -294,7 +294,7 @@ static void test_allocation_alignment(void)
 	printf("float array zero-initialized: %s\n",
        float_arr_zero ? "PASS" : "FAIL");	
 
-	safe_free(float_arr);	
+	dispose(float_arr);	
 
 	//=====================
 	char *char_arr = alnCharArr(4);
@@ -318,7 +318,7 @@ static void test_allocation_alignment(void)
 	printf("char array zero-initialized: %s\n",
 		char_arr_zero ? "PASS" : "FAIL");
 
-	safe_free(char_arr);
+	dispose(char_arr);
 }
 
 static void test_aligned_fragmentation(void)
@@ -337,7 +337,7 @@ static void test_aligned_fragmentation(void)
     printf("c = %p\n", (void *)c);
     printf("d = %p\n", (void *)d);
 
-    safe_free(b);
+    dispose(b);
 
     uint8_t *e = safe_malloc(8);
 
@@ -349,10 +349,10 @@ static void test_aligned_fragmentation(void)
     printf("Reused allocation aligned: %s\n",
            ((uintptr_t)e % _Alignof(max_align_t)) == 0 ? "PASS" : "FAIL");
 
-    safe_free(a);
-    safe_free(c);
-    safe_free(d);
-    safe_free(e);
+    dispose(a);
+    dispose(c);
+    dispose(d);
+    dispose(e);
 }
 
 void safemem_run_tests(void)

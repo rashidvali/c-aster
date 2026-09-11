@@ -206,7 +206,7 @@ void* safe_malloc(size_t size)
 }
 
 // === Free ===
-void safe_free(void* ptr) {
+void dispose(void* ptr) {
     if (!ptr)
         return;
 
@@ -216,7 +216,7 @@ void safe_free(void* ptr) {
     AllocationBlock* curr = allocated_list;
 
     /*
-     * safe_free() only accepts the exact start address
+     * dispose() only accepts the exact start address
      * of a currently registered allocation.
      */
     while (curr && curr->addr != ptr) {
