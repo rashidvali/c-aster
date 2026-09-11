@@ -248,7 +248,7 @@ static void test_allocation_alignment(void)
     safe_free(c);
 	safe_free(d);
 
-
+	// =================
 	int *int_arr = alnIntArr(4);
 
 	printf("int array aligned: %s\n",
@@ -271,6 +271,30 @@ static void test_allocation_alignment(void)
 		int_arr_zero ? "PASS" : "FAIL");
 
 	safe_free(int_arr);		
+
+	// ==================
+	float *float_arr = alnFloatArr(4);
+	
+	printf("float array aligned: %s\n",
+       (float_arr != NULL &&
+        ((uintptr_t)float_arr % _Alignof(float)) == 0)
+           ? "PASS" : "FAIL");
+
+	bool float_arr_zero = float_arr != NULL;
+
+	if (float_arr_zero) {
+		for (size_t i = 0; i < 4; ++i) {
+			if (float_arr[i] != 0.0f) {
+				float_arr_zero = false;
+				break;
+			}
+		}
+	}
+
+	printf("float array zero-initialized: %s\n",
+       float_arr_zero ? "PASS" : "FAIL");	
+
+	safe_free(float_arr);	
 }
 
 static void test_aligned_fragmentation(void)

@@ -76,3 +76,20 @@ int *alnIntArr(size_t count)
 
     return ptr;
 }
+
+float *alnFloatArr(size_t count)
+{
+    if (count == 0 || count > SIZE_MAX / sizeof(float))
+        return NULL;
+
+    size_t size = count * sizeof(float);
+
+    float *ptr = (float *)c_ast_allocate(size, _Alignof(float));
+
+    if (ptr == NULL)
+        return NULL;
+
+    memset(ptr, 0, size);
+
+    return ptr;
+}
