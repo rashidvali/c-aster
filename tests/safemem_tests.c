@@ -215,7 +215,7 @@ static void test_allocation_alignment(void)
 	char *a = alnChar('A');
 	int *b = alnInt(123);
 	float *c = alnFloat(3.14f);
-	char *d = alnStr("C*");
+	char *d = alnStr("C* - C-aster");
 
     printf("a = %p\n", a);
     printf("b = %p\n", b);
@@ -240,7 +240,7 @@ static void test_allocation_alignment(void)
        (c != NULL && *c == 3.14f) ? "PASS" : "FAIL");
 
 	printf("string allocation initialized: %s\n",
-       (d != NULL && strcmp(d, "C*") == 0) ? "PASS" : "FAIL"); //--
+       (d != NULL && strcmp(d, "C* - C-aster") == 0) ? "PASS" : "FAIL"); //--
 
     safe_free(a);
     safe_free(b);

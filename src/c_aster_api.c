@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdint.h>
 #include "c_aster_api.h"
 #include "safemem_embedded.h"
 
@@ -51,6 +52,27 @@ char *alnStr(const char *value)
         return NULL;
 
     memcpy(ptr, value, size);
+
+    return ptr;
+}
+
+int *alnIntArr(size_t count)
+{
+	if (count == 0)
+    	return NULL;
+
+	if (count > SIZE_MAX / sizeof(int))
+    	return NULL;
+
+    int *ptr = (int *)c_ast_allocate(
+        count * sizeof(int),
+        _Alignof(int)
+    );
+
+    if (ptr == NULL)
+        return NULL;
+
+    memset(ptr, 0, count * sizeof(int));
 
     return ptr;
 }
