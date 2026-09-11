@@ -93,3 +93,20 @@ float *alnFloatArr(size_t count)
 
     return ptr;
 }
+
+char *alnCharArr(size_t count)
+{
+    if (count == 0 || count > SIZE_MAX / sizeof(char))
+        return NULL;
+
+    size_t size = count * sizeof(char);
+
+    char *ptr = (char *)c_ast_allocate(size, _Alignof(char));
+
+    if (ptr == NULL)
+        return NULL;
+
+    memset(ptr, 0, size);
+
+    return ptr;
+}

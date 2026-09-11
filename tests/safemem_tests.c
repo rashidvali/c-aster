@@ -295,6 +295,30 @@ static void test_allocation_alignment(void)
        float_arr_zero ? "PASS" : "FAIL");	
 
 	safe_free(float_arr);	
+
+	//=====================
+	char *char_arr = alnCharArr(4);
+
+	printf("char array aligned: %s\n",
+       (char_arr != NULL &&
+        ((uintptr_t)char_arr % _Alignof(char)) == 0)
+           ? "PASS" : "FAIL");
+
+	bool char_arr_zero = char_arr != NULL;
+
+	if (char_arr_zero) {
+		for (size_t i = 0; i < 4; ++i) {
+			if (char_arr[i] != 0) {
+				char_arr_zero = false;
+				break;
+			}
+		}
+	}
+
+	printf("char array zero-initialized: %s\n",
+		char_arr_zero ? "PASS" : "FAIL");
+
+	safe_free(char_arr);
 }
 
 static void test_aligned_fragmentation(void)
