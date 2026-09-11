@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "safemem_embedded.h"
 #include "safemem_tests.h"
@@ -246,6 +247,30 @@ static void test_allocation_alignment(void)
     safe_free(b);
     safe_free(c);
 	safe_free(d);
+
+
+	int *int_arr = alnIntArr(4);
+
+	printf("int array aligned: %s\n",
+       (int_arr != NULL &&
+        ((uintptr_t)int_arr % _Alignof(int)) == 0)
+           ? "PASS" : "FAIL");
+
+	bool int_arr_zero = int_arr != NULL;
+
+	if (int_arr_zero) {
+		for (size_t i = 0; i < 4; ++i) {
+			if (int_arr[i] != 0) {
+				int_arr_zero = false;
+				break;
+			}
+		}
+	}
+
+	printf("int array zero-initialized: %s\n",
+		int_arr_zero ? "PASS" : "FAIL");
+
+	safe_free(int_arr);		
 }
 
 static void test_aligned_fragmentation(void)
