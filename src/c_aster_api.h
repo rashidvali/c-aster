@@ -16,4 +16,8 @@ void dispose(void* ptr);
     ((type *)c_ast_allocate_array( \
         (count), sizeof(type), _Alignof(type)))
 
+
+#define alnType(type) \
+    ((type *)c_ast_allocate(sizeof(type), _Alignof(type)))
+		
 #endif

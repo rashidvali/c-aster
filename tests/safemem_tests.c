@@ -348,6 +348,16 @@ static void test_allocation_alignment(void)
        pair_arr_zero ? "PASS" : "FAIL");
 
 	dispose(pair_arr);
+
+	//=======================
+	test_pair_t *pair = alnType(test_pair_t);
+
+	printf("typed allocation aligned: %s\n",
+       (pair != NULL &&
+        ((uintptr_t)pair % _Alignof(test_pair_t)) == 0)
+           ? "PASS" : "FAIL");
+
+	dispose(pair);
 }
 
 static void test_aligned_fragmentation(void)
