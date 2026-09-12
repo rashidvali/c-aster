@@ -12,4 +12,8 @@ char *alnCharArr(size_t count);
 
 void dispose(void* ptr);
 
+#define alnTypeArr(type, count) \
+    ((type *)c_ast_allocate_array( \
+        (count), sizeof(type), _Alignof(type)))
+
 #endif

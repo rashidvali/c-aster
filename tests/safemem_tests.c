@@ -18,6 +18,11 @@
 
 #include "c_ast_defaults.h"
 
+typedef struct {
+    int x;
+    float y;
+} test_pair_t;
+
 static void test_allocation_boundary(void)
 {
     printf("\n--- Allocation boundary test ---\n");
@@ -319,6 +324,30 @@ static void test_allocation_alignment(void)
 		char_arr_zero ? "PASS" : "FAIL");
 
 	dispose(char_arr);
+
+	//=====================
+	test_pair_t *pair_arr = alnTypeArr(test_pair_t, 3);
+
+	printf("typed array aligned: %s\n",
+       (pair_arr != NULL &&
+        ((uintptr_t)pair_arr % _Alignof(test_pair_t)) == 0)
+           ? "PASS" : "FAIL");
+
+	bool pair_arr_zero = pair_arr != NULL;
+
+	if (pair_arr_zero) {
+		for (size_t i = 0; i < 3; ++i) {
+			if (pair_arr[i].x != 0 || pair_arr[i].y != 0.0f) {
+				pair_arr_zero = false;
+				break;
+			}
+		}
+	}
+
+	printf("typed array zero-initialized: %s\n",
+       pair_arr_zero ? "PASS" : "FAIL");
+
+	dispose(pair_arr);
 }
 
 static void test_aligned_fragmentation(void)
