@@ -46,6 +46,23 @@ static _Alignas(max_align_t)
 uint8_t arena[C_ASTR_CONFIG_ARENA_SIZE];
 
 static AllocationBlock block_pool[C_ASTR_CONFIG_MAX_BLOCKS];
+
+#define C_ASTR_INDEX_SIZE \
+    ((C_ASTR_CONFIG_MAX_BLOCKS * 2U) + 1U)
+
+typedef uint16_t c_ast_block_index_t;
+
+#define C_ASTR_INDEX_EMPTY      UINT16_MAX
+#define C_ASTR_INDEX_TOMBSTONE  (UINT16_MAX - 1U)
+
+_Static_assert(
+    C_ASTR_CONFIG_MAX_BLOCKS <= UINT16_MAX - 1U,
+    "C_ASTR_CONFIG_MAX_BLOCKS exceeds allocation-index capacity"
+);
+
+static c_ast_block_index_t allocation_index[C_ASTR_INDEX_SIZE];
+static size_t allocation_index_tombstones = 0;
+
 static AllocationBlock* node_pool = NULL;
 static AllocationBlock* allocated_list = NULL;
 
@@ -126,6 +143,11 @@ void safemem_init() {
 
     node_pool = &block_pool[0];
 	allocated_list = NULL;
+
+	for (size_t i = 0; i < C_ASTR_INDEX_SIZE; ++i)
+		allocation_index[i] = C_ASTR_INDEX_EMPTY;
+
+	allocation_index_tombstones = 0;
 }
 
 // === Allocation ===
