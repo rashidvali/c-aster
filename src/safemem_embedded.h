@@ -65,4 +65,8 @@ int safe_memset(void* p, int val, size_t len);
 // === Debug/Monitoring ===
 void safemem_report();
 
+void *c_ast_allocate_array(size_t count,
+                           size_t element_size,
+                           size_t alignment);
+
 #endif // SAFEMEM_EMBEDDED_H

@@ -58,55 +58,27 @@ char *alnStr(const char *value)
 
 int *alnIntArr(size_t count)
 {
-	if (count == 0)
-    	return NULL;
-
-	if (count > SIZE_MAX / sizeof(int))
-    	return NULL;
-
-    int *ptr = (int *)c_ast_allocate(
-        count * sizeof(int),
+    return (int *)c_ast_allocate_array(
+        count,
+        sizeof(int),
         _Alignof(int)
     );
-
-    if (ptr == NULL)
-        return NULL;
-
-    memset(ptr, 0, count * sizeof(int));
-
-    return ptr;
 }
 
 float *alnFloatArr(size_t count)
 {
-    if (count == 0 || count > SIZE_MAX / sizeof(float))
-        return NULL;
-
-    size_t size = count * sizeof(float);
-
-    float *ptr = (float *)c_ast_allocate(size, _Alignof(float));
-
-    if (ptr == NULL)
-        return NULL;
-
-    memset(ptr, 0, size);
-
-    return ptr;
+    return (float *)c_ast_allocate_array(
+        count,
+        sizeof(float),
+        _Alignof(float)
+    );
 }
 
 char *alnCharArr(size_t count)
 {
-    if (count == 0 || count > SIZE_MAX / sizeof(char))
-        return NULL;
-
-    size_t size = count * sizeof(char);
-
-    char *ptr = (char *)c_ast_allocate(size, _Alignof(char));
-
-    if (ptr == NULL)
-        return NULL;
-
-    memset(ptr, 0, size);
-
-    return ptr;
+    return (char *)c_ast_allocate_array(
+        count,
+        sizeof(char),
+        _Alignof(char)
+    );
 }

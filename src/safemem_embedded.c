@@ -249,6 +249,28 @@ void dispose(void* ptr) {
     safemem_unlock();
 }
 
+void *c_ast_allocate_array(size_t count,
+                           size_t element_size,
+                           size_t alignment)
+{
+    if (count == 0 || element_size == 0)
+        return NULL;
+
+    if (count > SIZE_MAX / element_size)
+        return NULL;
+
+    size_t size = count * element_size;
+
+    void *ptr = c_ast_allocate(size, alignment);
+
+    if (ptr == NULL)
+        return NULL;
+
+    memset(ptr, 0, size);
+
+    return ptr;
+}
+
 // === String operations ===
 char* safe_strdup(const char* src) {
     if (!src) return NULL;
