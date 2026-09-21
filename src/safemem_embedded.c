@@ -348,23 +348,6 @@ void* safe_malloc(size_t size)
     return c_ast_allocate(size, _Alignof(max_align_t));
 }
 
-// TEMP
-bool c_ast_debug_index_contains(const void *ptr)
-{
-    bool result;
-
-    safemem_lock();
-
-    AllocationBlock *block =
-        allocation_index_lookup_unlocked(ptr);
-
-    result = (block != NULL && block->addr == ptr);
-
-    safemem_unlock();
-
-    return result;
-}
-
 // === Free ===
 void dispose(void* ptr) {
     if (!ptr)

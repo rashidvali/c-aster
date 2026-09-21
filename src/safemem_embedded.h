@@ -35,7 +35,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 // === TYPES ===
 typedef struct AllocationBlock {
@@ -69,8 +68,5 @@ void safemem_report();
 void *c_ast_allocate_array(size_t count,
                            size_t element_size,
                            size_t alignment);
-
-						   
-bool c_ast_debug_index_contains(const void *ptr);
 
 #endif // SAFEMEM_EMBEDDED_H

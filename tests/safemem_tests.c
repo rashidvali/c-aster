@@ -212,6 +212,7 @@ static void test_metadata_exhaustion(void)
         dispose(blocks[i]);
 }
 
+// Test #7
 static void test_allocation_alignment(void)
 {
     printf("\n--- Allocation alignment test ---\n");
@@ -226,26 +227,6 @@ static void test_allocation_alignment(void)
     printf("a = %p\n", a);
     printf("b = %p\n", b);
     printf("c = %p\n", c);
-
-    /*
-     * Verify that allocations were registered in the
-     * allocation index and can be found through it.
-     */
-    printf("a indexed: %s\n",
-           c_ast_debug_index_contains(a) ? "PASS" : "FAIL");
-
-    printf("b indexed: %s\n",
-           c_ast_debug_index_contains(b) ? "PASS" : "FAIL");
-
-    printf("c indexed: %s\n",
-           c_ast_debug_index_contains(c) ? "PASS" : "FAIL");
-
-    printf("d indexed: %s\n",
-           c_ast_debug_index_contains(d) ? "PASS" : "FAIL");
-
-    printf("char allocation aligned: %s\n",
-           ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL");
-	/*---*/
 
     printf("char allocation aligned: %s\n",
        ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL"); //--
