@@ -131,6 +131,110 @@ static uint8_t* align_address(uint8_t* ptr, size_t alignment)
     return (uint8_t*)address;
 }
 
+static size_t allocation_hash(const void *ptr)
+{
+    uintptr_t offset =
+        (uintptr_t)ptr - (uintptr_t)arena;
+
+    offset *= (uintptr_t)2654435761u;
+
+    return (size_t)(offset % C_ASTR_INDEX_SIZE);
+}
+
+static AllocationBlock *allocation_index_lookup_unlocked(const void *ptr)
+{
+    size_t slot = allocation_hash(ptr);
+
+    for (size_t probe = 0; probe < C_ASTR_INDEX_SIZE; ++probe) {
+        c_ast_block_index_t entry = allocation_index[slot];
+
+        if (entry == C_ASTR_INDEX_EMPTY)
+            return NULL;
+
+        if (entry != C_ASTR_INDEX_TOMBSTONE) {
+            AllocationBlock *block = &block_pool[entry];
+
+            if (block->addr == ptr)
+                return block;
+        }
+
+        slot = (slot + 1U) % C_ASTR_INDEX_SIZE;
+    }
+
+    return NULL;
+}
+
+static bool allocation_index_insert_unlocked(c_ast_block_index_t block_index)
+{
+    AllocationBlock *block = &block_pool[block_index];
+    size_t slot = allocation_hash(block->addr);
+    size_t first_tombstone = C_ASTR_INDEX_SIZE;
+
+    for (size_t probe = 0; probe < C_ASTR_INDEX_SIZE; ++probe) {
+        c_ast_block_index_t entry = allocation_index[slot];
+
+        if (entry == C_ASTR_INDEX_EMPTY) {
+            if (first_tombstone != C_ASTR_INDEX_SIZE) {
+                slot = first_tombstone;
+                allocation_index_tombstones--;
+            }
+
+            allocation_index[slot] = block_index;
+            return true;
+        }
+
+        if (entry == C_ASTR_INDEX_TOMBSTONE) {
+            if (first_tombstone == C_ASTR_INDEX_SIZE)
+                first_tombstone = slot;
+        } else {
+            AllocationBlock *existing = &block_pool[entry];
+
+            if (existing->addr == block->addr)
+                return false;
+        }
+
+        slot = (slot + 1U) % C_ASTR_INDEX_SIZE;
+    }
+
+    /*
+     * No EMPTY slot was found, but a tombstone encountered during
+     * probing can still be reused.
+     */
+    if (first_tombstone != C_ASTR_INDEX_SIZE) {
+        allocation_index[first_tombstone] = block_index;
+        allocation_index_tombstones--;
+        return true;
+    }
+
+    return false;
+}
+
+static bool allocation_index_remove_unlocked(const void *ptr)
+{
+    size_t slot = allocation_hash(ptr);
+
+    for (size_t probe = 0; probe < C_ASTR_INDEX_SIZE; ++probe) {
+        c_ast_block_index_t entry = allocation_index[slot];
+
+        if (entry == C_ASTR_INDEX_EMPTY)
+            return false;
+
+        if (entry != C_ASTR_INDEX_TOMBSTONE) {
+            AllocationBlock *block = &block_pool[entry];
+
+            if (block->addr == ptr) {
+                allocation_index[slot] = C_ASTR_INDEX_TOMBSTONE;
+                allocation_index_tombstones++;
+                return true;
+            }
+        }
+
+        slot = (slot + 1U) % C_ASTR_INDEX_SIZE;
+    }
+
+    return false;
+}
+
 // === Init ===
 void safemem_init() {
     safemem_mutex = xSemaphoreCreateMutex();
@@ -204,19 +308,36 @@ void* c_ast_allocate(size_t size, size_t alignment)
         return NULL;
     }
 
-    block->addr = candidate;
-    block->size = size;
+   	block->addr = candidate;
+	block->size = size;
 
-    /*
-     * Insert into allocated_list at the gap we found,
-     * preserving address order.
-     */
-    block->next = curr;
+	/*
+	* Register the allocation in the allocation index before
+	* publishing it in allocated_list.
+	*/
+	c_ast_block_index_t block_index =
+		(c_ast_block_index_t)(block - block_pool);
 
-    if (prev)
-        prev->next = block;
-    else
-        allocated_list = block;
+	if (!allocation_index_insert_unlocked(block_index)) {
+		SAFE_LOGE(TAG_MEM,
+				"Allocation of %zu bytes failed: allocation index insertion failed\n",
+				size);
+
+		free_node(block);
+		safemem_unlock();
+		return NULL;
+	}
+
+	/*
+	* Insert into allocated_list at the gap we found,
+	* preserving address order.
+	*/
+	block->next = curr;
+
+	if (prev)
+		prev->next = block;
+	else
+		allocated_list = block;
 
     safemem_unlock();
     return candidate;
@@ -225,6 +346,23 @@ void* c_ast_allocate(size_t size, size_t alignment)
 void* safe_malloc(size_t size)
 {
     return c_ast_allocate(size, _Alignof(max_align_t));
+}
+
+// TEMP
+bool c_ast_debug_index_contains(const void *ptr)
+{
+    bool result;
+
+    safemem_lock();
+
+    AllocationBlock *block =
+        allocation_index_lookup_unlocked(ptr);
+
+    result = (block != NULL && block->addr == ptr);
+
+    safemem_unlock();
+
+    return result;
 }
 
 // === Free ===
@@ -252,6 +390,17 @@ void dispose(void* ptr) {
         safemem_unlock();
         return;
     }
+
+	/*
+	* Remove the allocation from the allocation index before
+	* releasing its metadata node.
+	*/
+	if (!allocation_index_remove_unlocked(ptr)) {
+		SAFE_LOGE(TAG_MEM,
+				"Free failed: allocation index entry not found\n");
+		safemem_unlock();
+		return;
+	}
 
     /*
      * Remove the allocation from the sorted allocation list.
