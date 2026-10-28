@@ -40,7 +40,8 @@
 typedef struct AllocationBlock {
     void* addr;
     size_t size;
-    struct AllocationBlock* next;
+    struct AllocationBlock* prev;
+    struct AllocationBlock *next;
 } AllocationBlock;
 
 // === API ===

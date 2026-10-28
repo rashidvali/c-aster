@@ -164,6 +164,24 @@ static AllocationBlock *allocation_index_lookup_unlocked(const void *ptr)
     return NULL;
 }
 
+static AllocationBlock *
+allocation_validate_start_unlocked(const void *ptr, size_t size)
+{
+    if (ptr == NULL)
+        return NULL;
+
+    AllocationBlock *block =
+        allocation_index_lookup_unlocked(ptr);
+
+    if (block == NULL)
+        return NULL;
+
+    if (size > block->size)
+        return NULL;
+
+    return block;
+}
+
 static bool allocation_index_insert_unlocked(c_ast_block_index_t block_index)
 {
     AllocationBlock *block = &block_pool[block_index];
@@ -332,12 +350,16 @@ void* c_ast_allocate(size_t size, size_t alignment)
 	* Insert into allocated_list at the gap we found,
 	* preserving address order.
 	*/
+	block->prev = prev;
 	block->next = curr;
 
 	if (prev)
 		prev->next = block;
 	else
 		allocated_list = block;
+
+	if (curr)
+		curr->prev = block;
 
     safemem_unlock();
     return candidate;
@@ -355,17 +377,12 @@ void dispose(void* ptr) {
 
     safemem_lock();
 
-    AllocationBlock* prev = NULL;
-    AllocationBlock* curr = allocated_list;
-
-    /*
-     * dispose() only accepts the exact start address
-     * of a currently registered allocation.
-     */
-    while (curr && curr->addr != ptr) {
-        prev = curr;
-        curr = curr->next;
-    }
+	/*
+	* Find the allocation directly through the hash index.
+	* Only exact allocation-start addresses are accepted.
+	*/
+	AllocationBlock* curr =
+		allocation_index_lookup_unlocked(ptr);	
 
     if (!curr) {
         SAFE_LOGE(TAG_MEM,
@@ -385,13 +402,17 @@ void dispose(void* ptr) {
 		return;
 	}
 
-    /*
-     * Remove the allocation from the sorted allocation list.
-     */
-    if (prev)
-        prev->next = curr->next;
-    else
-        allocated_list = curr->next;
+	/*
+	* Remove the allocation from the doubly linked
+	* address-sorted allocation list.
+	*/
+	if (curr->prev)
+		curr->prev->next = curr->next;
+	else
+		allocated_list = curr->next;
+
+	if (curr->next)
+		curr->next->prev = curr->prev;
 
     /*
      * Return its metadata node to the node pool.
