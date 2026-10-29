@@ -82,3 +82,13 @@ char *alnCharArr(size_t count)
         _Alignof(char)
     );
 }
+
+bool setInt(int *ptr, int value)
+{
+    return c_ast_write(ptr, &value, sizeof(value));
+}
+
+bool getInt(const int *ptr, int *out)
+{
+    return c_ast_read(ptr, out, sizeof(int));
+}

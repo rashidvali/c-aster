@@ -1,6 +1,8 @@
 #ifndef C_ASTER_API_H
 #define C_ASTER_API_H
 
+#include <stdbool.h>
+
 int *alnInt(int value);
 float *alnFloat(float value);
 char *alnChar(char value);
@@ -9,6 +11,9 @@ char *alnStr(const char *value);
 int *alnIntArr(size_t count);
 float *alnFloatArr(size_t count);
 char *alnCharArr(size_t count);
+
+bool setInt(int *ptr, int value);
+bool getInt(const int *ptr, int *out);
 
 void dispose(void* ptr);
 

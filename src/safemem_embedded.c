@@ -182,6 +182,48 @@ allocation_validate_start_unlocked(const void *ptr, size_t size)
     return block;
 }
 
+bool c_ast_write(void *ptr, const void *value, size_t size)
+{
+    if (ptr == NULL || value == NULL || size == 0)
+        return false;
+
+    safemem_lock();
+
+    AllocationBlock *block =
+        allocation_validate_start_unlocked(ptr, size);
+
+    if (block == NULL) {
+        safemem_unlock();
+        return false;
+    }
+
+    memcpy(ptr, value, size);
+
+    safemem_unlock();
+    return true;
+}
+
+bool c_ast_read(const void *ptr, void *out, size_t size)
+{
+    if (ptr == NULL || out == NULL || size == 0)
+        return false;
+
+    safemem_lock();
+
+    AllocationBlock *block =
+        allocation_validate_start_unlocked(ptr, size);
+
+    if (block == NULL) {
+        safemem_unlock();
+        return false;
+    }
+
+    memcpy(out, ptr, size);
+
+    safemem_unlock();
+    return true;
+}
+
 static bool allocation_index_insert_unlocked(c_ast_block_index_t block_index)
 {
     AllocationBlock *block = &block_pool[block_index];

@@ -35,6 +35,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 // === TYPES ===
 typedef struct AllocationBlock {
@@ -62,6 +63,9 @@ int get_mem_float(float* p, float* out);
 int set_mem_block(void* p, const void* data, size_t len);
 int get_mem_block(void* p, void* out, size_t len);
 int safe_memset(void* p, int val, size_t len);
+
+bool c_ast_write(void *ptr, const void *value, size_t size);
+bool c_ast_read(const void *ptr, void *out, size_t size);
 
 // === Debug/Monitoring ===
 void safemem_report();

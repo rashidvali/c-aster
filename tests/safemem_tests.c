@@ -249,6 +249,40 @@ static void test_allocation_alignment(void)
 	printf("string allocation initialized: %s\n",
        (d != NULL && strcmp(d, "C* - C-aster") == 0) ? "PASS" : "FAIL"); //--
 
+	/*
+	* Test validated integer write through the C* API.
+	*/
+	printf("setInt valid write: %s\n",
+		setInt(b, 456) ? "PASS" : "FAIL");
+
+	printf("setInt value updated: %s\n",
+		(b != NULL && *b == 456) ? "PASS" : "FAIL");
+
+
+	/*
+	* Test validated integer read through the C* API.
+	*/
+	int read_value = 0;
+
+	printf("getInt valid read: %s\n",
+		getInt(b, &read_value) ? "PASS" : "FAIL");
+
+	printf("getInt correct value: %s\n",
+		read_value == 456 ? "PASS" : "FAIL");
+		
+		
+	/*
+	* Verify that setInt rejects an unmanaged pointer.
+	*/
+	int unmanaged = 100;
+
+	printf("setInt invalid pointer rejected: %s\n",
+		!setInt(&unmanaged, 456) ? "PASS" : "FAIL");
+
+	printf("setInt unmanaged value unchanged: %s\n",
+		unmanaged == 100 ? "PASS" : "FAIL");
+
+
     dispose(a);
     dispose(b);
     dispose(c);
