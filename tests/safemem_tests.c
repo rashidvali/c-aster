@@ -270,7 +270,7 @@ static void test_allocation_alignment(void)
 	printf("getInt correct value: %s\n",
 		read_value == 456 ? "PASS" : "FAIL");
 		
-		
+
 	/*
 	* Verify that setInt rejects an unmanaged pointer.
 	*/
@@ -283,10 +283,47 @@ static void test_allocation_alignment(void)
 		unmanaged == 100 ? "PASS" : "FAIL");
 
 
+	/*
+	* Verify that getInt rejects an unmanaged pointer
+	* without modifying the output value.
+	*/
+	int read_output = 999;
+
+	printf("getInt invalid pointer rejected: %s\n",
+		!getInt(&unmanaged, &read_output) ? "PASS" : "FAIL");
+
+	printf("getInt output unchanged on failure: %s\n",
+		read_output == 999 ? "PASS" : "FAIL");
+
     dispose(a);
     dispose(b);
     dispose(c);
 	dispose(d);
+
+
+	/*
+	* Verify that disposed allocations cannot be accessed
+	* through the validated C* API.
+	*/
+	int *freed_int = alnInt(100);
+	int freed_read_output = 999;
+
+	printf("use-after-free test allocation: %s\n",
+		freed_int != NULL ? "PASS" : "FAIL");
+
+	if (freed_int != NULL) {
+		dispose(freed_int);
+
+		printf("setInt after dispose rejected: %s\n",
+			!setInt(freed_int, 200) ? "PASS" : "FAIL");
+
+		printf("getInt after dispose rejected: %s\n",
+			!getInt(freed_int, &freed_read_output) ? "PASS" : "FAIL");
+
+		printf("getInt output unchanged after dispose: %s\n",
+			freed_read_output == 999 ? "PASS" : "FAIL");
+	}
+
 
 	// =================
 	int *int_arr = alnIntArr(4);

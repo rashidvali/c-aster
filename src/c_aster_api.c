@@ -92,3 +92,8 @@ bool getInt(const int *ptr, int *out)
 {
     return c_ast_read(ptr, out, sizeof(int));
 }
+
+bool setFloat(float *ptr, float value)
+{
+    return c_ast_write(ptr, &value, sizeof(value));
+}

@@ -14,6 +14,7 @@ char *alnCharArr(size_t count);
 
 bool setInt(int *ptr, int value);
 bool getInt(const int *ptr, int *out);
+bool setFloat(float *ptr, float value);
 
 void dispose(void* ptr);
 
