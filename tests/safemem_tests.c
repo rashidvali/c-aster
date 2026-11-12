@@ -573,6 +573,94 @@ static void test_aligned_fragmentation(void)
     dispose(e);
 }
 
+
+// Test #12
+static void test_generation_tracking(void)
+{
+    printf("\n>Test #12 --- Generation tracking test ---\n");
+
+    safemem_init();
+
+    int *a = alnInt(100);
+    size_t slot_a = 0;
+    uint64_t gen_a = 0;
+    uint64_t gen_after_free = 0;
+
+    bool allocated = (a != NULL);
+
+    printf("initial allocation: %s\n",
+           allocated ? "PASS" : "FAIL");
+
+    if (!allocated)
+        return;
+
+    bool slot_found = c_ast_debug_get_slot(a, &slot_a);
+
+    printf("initial metadata slot found: %s\n",
+           slot_found ? "PASS" : "FAIL");
+
+    if (!slot_found) {
+        dispose(a);
+        return;
+    }
+
+    bool generation_read =
+        c_ast_debug_get_generation(slot_a, &gen_a);
+
+    printf("initial generation nonzero: %s\n",
+           (generation_read && gen_a > 0) ? "PASS" : "FAIL");
+
+    dispose(a);
+
+    bool preserved =
+        c_ast_debug_get_generation(slot_a, &gen_after_free);
+
+    printf("generation preserved after dispose: %s\n",
+           (preserved && gen_after_free == gen_a)
+               ? "PASS" : "FAIL");
+
+    /*
+     * The disposed metadata node is returned to the
+     * head of node_pool and should be reused next.
+     */
+    int *b = alnInt(200);
+    size_t slot_b = 0;
+    uint64_t gen_b = 0;
+
+    bool reused =
+        (b != NULL) &&
+        c_ast_debug_get_slot(b, &slot_b);
+
+    printf("metadata slot reused: %s\n",
+           (reused && slot_b == slot_a) ? "PASS" : "FAIL");
+
+    bool advanced =
+        reused &&
+        c_ast_debug_get_generation(slot_b, &gen_b);
+
+    printf("generation advanced on reuse: %s\n",
+           (advanced && gen_a < UINT64_MAX &&
+            gen_b == gen_a + 1)
+               ? "PASS" : "FAIL");
+
+    dispose(b);
+
+    /*
+     * safemem_init() must not reset generation history.
+     */
+    safemem_init();
+
+    uint64_t gen_after_init = 0;
+
+    bool persisted =
+        c_ast_debug_get_generation(slot_a, &gen_after_init);
+
+    printf("generation preserved across init: %s\n",
+           (persisted && gen_after_init == gen_b)
+               ? "PASS" : "FAIL");
+}
+
+
 void safemem_run_tests(void)
 {
     printf("\n=== C* safemem tests === \n");
@@ -588,5 +676,6 @@ void safemem_run_tests(void)
 	test_integer_access();  // 9
 	test_float_access(); // 10
 	test_disposed_access(); // 11
-	// test_aligned_fragmentation(); // 12
+	test_generation_tracking(); // 12
+	// test_aligned_fragmentation(); // 13
 }

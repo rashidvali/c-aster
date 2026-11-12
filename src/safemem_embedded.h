@@ -74,4 +74,6 @@ void *c_ast_allocate_array(size_t count,
                            size_t element_size,
                            size_t alignment);
 
+bool c_ast_debug_get_slot(const void *ptr, size_t *slot);
+bool c_ast_debug_get_generation(size_t slot, uint64_t *generation);						   
 #endif // SAFEMEM_EMBEDDED_H

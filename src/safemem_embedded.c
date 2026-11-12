@@ -79,12 +79,34 @@ void safemem_unlock() {
 }
 
 // === Node Pool ===
-static AllocationBlock* alloc_node() {
-    if (!node_pool) return NULL;
+
+static AllocationBlock* alloc_node()
+{
+    if (!node_pool)
+        return NULL;
+
     AllocationBlock* node = node_pool;
+
+    size_t slot = (size_t)(node - block_pool);
+
+    /*
+     * Prevent generation wraparound.
+     * An exhausted metadata slot cannot be reused.
+     */
+    if (slot_generations[slot] == UINT64_MAX)
+        return NULL;
+
     node_pool = node_pool->next;
+
+    /*
+     * Advance generation whenever a metadata slot
+     * is assigned to a new allocation.
+     */
+    slot_generations[slot]++;
+
     return node;
 }
+
 
 static void free_node(AllocationBlock* node) {
     node->next = node_pool;
@@ -163,6 +185,50 @@ static AllocationBlock *allocation_index_lookup_unlocked(const void *ptr)
     }
 
     return NULL;
+}
+
+bool c_ast_debug_get_slot(const void *ptr, size_t *slot)
+{
+    if (ptr == NULL || slot == NULL)
+        return false;
+
+    if (safemem_mutex == NULL)
+        return false;
+
+    if (xSemaphoreTake(safemem_mutex, portMAX_DELAY) != pdTRUE)
+        return false;
+
+    AllocationBlock *block = allocation_index_lookup_unlocked(ptr);
+
+    bool result = false;
+
+    if (block != NULL) {
+        *slot = (size_t)(block - block_pool);
+        result = true;
+    }
+
+    xSemaphoreGive(safemem_mutex);
+
+    return result;
+}
+
+
+bool c_ast_debug_get_generation(size_t slot, uint64_t *generation)
+{
+    if (slot >= C_ASTR_CONFIG_MAX_BLOCKS || generation == NULL)
+        return false;
+
+    if (safemem_mutex == NULL)
+        return false;
+
+    if (xSemaphoreTake(safemem_mutex, portMAX_DELAY) != pdTRUE)
+        return false;
+
+    *generation = slot_generations[slot];
+
+    xSemaphoreGive(safemem_mutex);
+
+    return true;
 }
 
 static AllocationBlock *
