@@ -212,225 +212,332 @@ static void test_metadata_exhaustion(void)
         dispose(blocks[i]);
 }
 
-// Test #7
+
+ // Test #7
 static void test_allocation_alignment(void)
 {
-    printf("\n--- Allocation alignment test ---\n");
+    printf("\n>Test #7 --- Allocation alignment test ---\n");
 
     safemem_init();
 
-	char *a = alnChar('A');
-	int *b = alnInt(123);
-	float *c = alnFloat(3.14f);
-	char *d = alnStr("C* - C-aster");
+    // Primitive allocations
+    char *a = alnChar('A');
+    int *b = alnInt(123);
+    float *c = alnFloat(3.14f);
+    char *d = alnStr("C* - C-aster");
 
-    printf("a = %p\n", a);
-    printf("b = %p\n", b);
-    printf("c = %p\n", c);
+    printf("a = %p\n", (void *)a);
+    printf("b = %p\n", (void *)b);
+    printf("c = %p\n", (void *)c);
 
     printf("char allocation aligned: %s\n",
-       ((uintptr_t)a % _Alignof(char)) == 0 ? "PASS" : "FAIL"); //--
-	
-	printf("char allocation initialized: %s\n",
-       (a != NULL && *a == 'A') ? "PASS" : "FAIL");
+           (a != NULL &&
+            ((uintptr_t)a % _Alignof(char)) == 0)
+               ? "PASS" : "FAIL");
 
-	printf("int allocation aligned: %s\n", 
-       ((uintptr_t)b % _Alignof(int)) == 0 ? "PASS" : "FAIL"); //--
+    printf("int allocation aligned: %s\n",
+           (b != NULL &&
+            ((uintptr_t)b % _Alignof(int)) == 0)
+               ? "PASS" : "FAIL");
 
-	printf("int allocation initialized: %s\n",
-       (b != NULL && *b == 123) ? "PASS" : "FAIL");
+    printf("float allocation aligned: %s\n",
+           (c != NULL &&
+            ((uintptr_t)c % _Alignof(float)) == 0)
+               ? "PASS" : "FAIL");
 
-	printf("float allocation aligned: %s\n",
-       ((uintptr_t)c % _Alignof(float)) == 0 ? "PASS" : "FAIL"); //--
-
-	printf("float allocation initialized: %s\n",
-       (c != NULL && *c == 3.14f) ? "PASS" : "FAIL");
-
-	printf("string allocation initialized: %s\n",
-       (d != NULL && strcmp(d, "C* - C-aster") == 0) ? "PASS" : "FAIL"); //--
-
-	/*
-	* Test validated integer write through the C* API.
-	*/
-	printf("setInt valid write: %s\n",
-		setInt(b, 456) ? "PASS" : "FAIL");
-
-	printf("setInt value updated: %s\n",
-		(b != NULL && *b == 456) ? "PASS" : "FAIL");
-
-
-	/*
-	* Test validated integer read through the C* API.
-	*/
-	int read_value = 0;
-
-	printf("getInt valid read: %s\n",
-		getInt(b, &read_value) ? "PASS" : "FAIL");
-
-	printf("getInt correct value: %s\n",
-		read_value == 456 ? "PASS" : "FAIL");
-		
-
-	/*
-	* Verify that setInt rejects an unmanaged pointer.
-	*/
-	int unmanaged = 100;
-
-	printf("setInt invalid pointer rejected: %s\n",
-		!setInt(&unmanaged, 456) ? "PASS" : "FAIL");
-
-	printf("setInt unmanaged value unchanged: %s\n",
-		unmanaged == 100 ? "PASS" : "FAIL");
-
-
-	/*
-	* Verify that getInt rejects an unmanaged pointer
-	* without modifying the output value.
-	*/
-	int read_output = 999;
-
-	printf("getInt invalid pointer rejected: %s\n",
-		!getInt(&unmanaged, &read_output) ? "PASS" : "FAIL");
-
-	printf("getInt output unchanged on failure: %s\n",
-		read_output == 999 ? "PASS" : "FAIL");
 
     dispose(a);
     dispose(b);
     dispose(c);
-	dispose(d);
+    dispose(d);
 
+    /*
+     * Integer array alignment.
+     */
+    int *int_arr = alnIntArr(4);
 
-	/*
-	* Verify that disposed allocations cannot be accessed
-	* through the validated C* API.
-	*/
-	int *freed_int = alnInt(100);
-	int freed_read_output = 999;
+    printf("int array aligned: %s\n",
+           (int_arr != NULL &&
+            ((uintptr_t)int_arr % _Alignof(int)) == 0)
+               ? "PASS" : "FAIL");
 
-	printf("use-after-free test allocation: %s\n",
-		freed_int != NULL ? "PASS" : "FAIL");
+    dispose(int_arr);
 
-	if (freed_int != NULL) {
-		dispose(freed_int);
+    /*
+     * Float array alignment.
+     */
+    float *float_arr = alnFloatArr(4);
 
-		printf("setInt after dispose rejected: %s\n",
-			!setInt(freed_int, 200) ? "PASS" : "FAIL");
+    printf("float array aligned: %s\n",
+           (float_arr != NULL &&
+            ((uintptr_t)float_arr % _Alignof(float)) == 0)
+               ? "PASS" : "FAIL");
 
-		printf("getInt after dispose rejected: %s\n",
-			!getInt(freed_int, &freed_read_output) ? "PASS" : "FAIL");
+    dispose(float_arr);
 
-		printf("getInt output unchanged after dispose: %s\n",
-			freed_read_output == 999 ? "PASS" : "FAIL");
-	}
+    /*
+     * Character array alignment.
+     */
+    char *char_arr = alnCharArr(4);
 
+    printf("char array aligned: %s\n",
+           (char_arr != NULL &&
+            ((uintptr_t)char_arr % _Alignof(char)) == 0)
+               ? "PASS" : "FAIL");
 
-	// =================
-	int *int_arr = alnIntArr(4);
+    dispose(char_arr);
 
-	printf("int array aligned: %s\n",
-       (int_arr != NULL &&
-        ((uintptr_t)int_arr % _Alignof(int)) == 0)
-           ? "PASS" : "FAIL");
+    /*
+     * Typed array alignment.
+     */
+    test_pair_t *pair_arr = alnTypeArr(test_pair_t, 3);
 
-	bool int_arr_zero = int_arr != NULL;
+    printf("typed array aligned: %s\n",
+           (pair_arr != NULL &&
+            ((uintptr_t)pair_arr % _Alignof(test_pair_t)) == 0)
+               ? "PASS" : "FAIL");
 
-	if (int_arr_zero) {
-		for (size_t i = 0; i < 4; ++i) {
-			if (int_arr[i] != 0) {
-				int_arr_zero = false;
-				break;
-			}
-		}
-	}
+    dispose(pair_arr);
 
-	printf("int array zero-initialized: %s\n",
-		int_arr_zero ? "PASS" : "FAIL");
+    /*
+     * Typed scalar allocation alignment.
+     */
+    test_pair_t *pair = alnType(test_pair_t);
 
-	dispose(int_arr);		
+    printf("typed allocation aligned: %s\n",
+           (pair != NULL &&
+            ((uintptr_t)pair % _Alignof(test_pair_t)) == 0)
+               ? "PASS" : "FAIL");
 
-	// ==================
-	float *float_arr = alnFloatArr(4);
-	
-	printf("float array aligned: %s\n",
-       (float_arr != NULL &&
-        ((uintptr_t)float_arr % _Alignof(float)) == 0)
-           ? "PASS" : "FAIL");
-
-	bool float_arr_zero = float_arr != NULL;
-
-	if (float_arr_zero) {
-		for (size_t i = 0; i < 4; ++i) {
-			if (float_arr[i] != 0.0f) {
-				float_arr_zero = false;
-				break;
-			}
-		}
-	}
-
-	printf("float array zero-initialized: %s\n",
-       float_arr_zero ? "PASS" : "FAIL");	
-
-	dispose(float_arr);	
-
-	//=====================
-	char *char_arr = alnCharArr(4);
-
-	printf("char array aligned: %s\n",
-       (char_arr != NULL &&
-        ((uintptr_t)char_arr % _Alignof(char)) == 0)
-           ? "PASS" : "FAIL");
-
-	bool char_arr_zero = char_arr != NULL;
-
-	if (char_arr_zero) {
-		for (size_t i = 0; i < 4; ++i) {
-			if (char_arr[i] != 0) {
-				char_arr_zero = false;
-				break;
-			}
-		}
-	}
-
-	printf("char array zero-initialized: %s\n",
-		char_arr_zero ? "PASS" : "FAIL");
-
-	dispose(char_arr);
-
-	//=====================
-	test_pair_t *pair_arr = alnTypeArr(test_pair_t, 3);
-
-	printf("typed array aligned: %s\n",
-       (pair_arr != NULL &&
-        ((uintptr_t)pair_arr % _Alignof(test_pair_t)) == 0)
-           ? "PASS" : "FAIL");
-
-	bool pair_arr_zero = pair_arr != NULL;
-
-	if (pair_arr_zero) {
-		for (size_t i = 0; i < 3; ++i) {
-			if (pair_arr[i].x != 0 || pair_arr[i].y != 0.0f) {
-				pair_arr_zero = false;
-				break;
-			}
-		}
-	}
-
-	printf("typed array zero-initialized: %s\n",
-       pair_arr_zero ? "PASS" : "FAIL");
-
-	dispose(pair_arr);
-
-	//=======================
-	test_pair_t *pair = alnType(test_pair_t);
-
-	printf("typed allocation aligned: %s\n",
-       (pair != NULL &&
-        ((uintptr_t)pair % _Alignof(test_pair_t)) == 0)
-           ? "PASS" : "FAIL");
-
-	dispose(pair);
+    dispose(pair);
 }
+
+
+static void test_allocation_initialization(void)
+{
+    printf("\n>Test #8 --- Allocation initialization test ---\n");
+
+    safemem_init();
+
+    char *a = alnChar('A');
+    int *b = alnInt(123);
+    float *c = alnFloat(3.14f);
+    char *d = alnStr("C* - C-aster");
+
+    printf("char allocation initialized: %s\n",
+           (a != NULL && *a == 'A') ? "PASS" : "FAIL");
+
+    printf("int allocation initialized: %s\n",
+           (b != NULL && *b == 123) ? "PASS" : "FAIL");
+
+    printf("float allocation initialized: %s\n",
+           (c != NULL && *c == 3.14f) ? "PASS" : "FAIL");
+
+    printf("string allocation initialized: %s\n",
+           (d != NULL && strcmp(d, "C* - C-aster") == 0)
+               ? "PASS" : "FAIL");
+
+    dispose(a);
+    dispose(b);
+    dispose(c);
+    dispose(d);
+
+    int *int_arr = alnIntArr(4);
+    bool int_arr_zero = int_arr != NULL;
+
+    if (int_arr_zero) {
+        for (size_t i = 0; i < 4; ++i) {
+            if (int_arr[i] != 0) {
+                int_arr_zero = false;
+                break;
+            }
+        }
+    }
+
+    printf("int array zero-initialized: %s\n",
+           int_arr_zero ? "PASS" : "FAIL");
+
+    dispose(int_arr);
+
+    float *float_arr = alnFloatArr(4);
+    bool float_arr_zero = float_arr != NULL;
+
+    if (float_arr_zero) {
+        for (size_t i = 0; i < 4; ++i) {
+            if (float_arr[i] != 0.0f) {
+                float_arr_zero = false;
+                break;
+            }
+        }
+    }
+
+    printf("float array zero-initialized: %s\n",
+           float_arr_zero ? "PASS" : "FAIL");
+
+    dispose(float_arr);
+
+    char *char_arr = alnCharArr(4);
+    bool char_arr_zero = char_arr != NULL;
+
+    if (char_arr_zero) {
+        for (size_t i = 0; i < 4; ++i) {
+            if (char_arr[i] != 0) {
+                char_arr_zero = false;
+                break;
+            }
+        }
+    }
+
+    printf("char array zero-initialized: %s\n",
+           char_arr_zero ? "PASS" : "FAIL");
+
+    dispose(char_arr);
+
+    test_pair_t *pair_arr = alnTypeArr(test_pair_t, 3);
+    bool pair_arr_zero = pair_arr != NULL;
+
+    if (pair_arr_zero) {
+        for (size_t i = 0; i < 3; ++i) {
+            if (pair_arr[i].x != 0 || pair_arr[i].y != 0.0f) {
+                pair_arr_zero = false;
+                break;
+            }
+        }
+    }
+
+    printf("typed array zero-initialized: %s\n",
+           pair_arr_zero ? "PASS" : "FAIL");
+
+    dispose(pair_arr);
+}
+
+
+ // Test #9
+static void test_integer_access(void)
+{
+    printf("\n>Test #9 --- Integer access test ---\n");
+
+    safemem_init();
+
+    int *b = alnInt(123);
+
+    printf("integer test allocation: %s\n",
+           b != NULL ? "PASS" : "FAIL");
+
+    /*
+     * Test validated integer write through the C* API.
+     */
+    printf("setInt valid write: %s\n",
+           setInt(b, 456) ? "PASS" : "FAIL");
+
+    printf("setInt value updated: %s\n",
+           (b != NULL && *b == 456) ? "PASS" : "FAIL");
+
+    /*
+     * Test validated integer read through the C* API.
+     */
+    int read_value = 0;
+
+    printf("getInt valid read: %s\n",
+           getInt(b, &read_value) ? "PASS" : "FAIL");
+
+    printf("getInt correct value: %s\n",
+           read_value == 456 ? "PASS" : "FAIL");
+
+    /*
+     * Verify rejection of an unmanaged pointer.
+     */
+    int unmanaged = 100;
+
+    printf("setInt invalid pointer rejected: %s\n",
+           !setInt(&unmanaged, 456) ? "PASS" : "FAIL");
+
+    printf("setInt unmanaged value unchanged: %s\n",
+           unmanaged == 100 ? "PASS" : "FAIL");
+
+    /*
+     * Verify that getInt rejects an unmanaged pointer
+     * without modifying the output value.
+     */
+    int read_output = 999;
+
+    printf("getInt invalid pointer rejected: %s\n",
+           !getInt(&unmanaged, &read_output) ? "PASS" : "FAIL");
+
+    printf("getInt output unchanged on failure: %s\n",
+           read_output == 999 ? "PASS" : "FAIL");
+
+    dispose(b);
+}
+
+
+// Test #10
+static void test_float_access(void)
+{
+    printf("\n>Test #10 --- Float access test ---\n");
+
+    safemem_init();
+
+    float *p = alnFloat(3.14f);
+
+    printf("float test allocation: %s\n",
+           p != NULL ? "PASS" : "FAIL");
+
+    /*
+     * Test validated float write through the C* API.
+     */
+    printf("setFloat valid write: %s\n",
+           setFloat(p, 6.28f) ? "PASS" : "FAIL");
+
+    printf("setFloat value updated: %s\n",
+           (p != NULL && *p == 6.28f) ? "PASS" : "FAIL");
+
+    /*
+     * Verify that setFloat rejects an unmanaged pointer.
+     */
+    float unmanaged = 1.5f;
+
+    printf("setFloat invalid pointer rejected: %s\n",
+           !setFloat(&unmanaged, 9.5f) ? "PASS" : "FAIL");
+
+    printf("setFloat unmanaged value unchanged: %s\n",
+           unmanaged == 1.5f ? "PASS" : "FAIL");
+
+    dispose(p);
+}
+
+
+// Test #11
+static void test_disposed_access(void)
+{
+    printf("\n>Test #11 --- Disposed access test ---\n");
+
+    safemem_init();
+
+    /*
+     * Verify that disposed allocations cannot be accessed
+     * through the validated C* API.
+     */
+    int *freed_int = alnInt(100);
+    int freed_read_output = 999;
+
+    printf("use-after-free test allocation: %s\n",
+           freed_int != NULL ? "PASS" : "FAIL");
+
+    if (freed_int != NULL) {
+        dispose(freed_int);
+
+        printf("setInt after dispose rejected: %s\n",
+               !setInt(freed_int, 200) ? "PASS" : "FAIL");
+
+        printf("getInt after dispose rejected: %s\n",
+               !getInt(freed_int, &freed_read_output) ? "PASS" : "FAIL");
+
+        printf("getInt output unchanged after dispose: %s\n",
+               freed_read_output == 999 ? "PASS" : "FAIL");
+    }
+}
+
 
 static void test_aligned_fragmentation(void)
 {
@@ -468,7 +575,7 @@ static void test_aligned_fragmentation(void)
 
 void safemem_run_tests(void)
 {
-    printf("\n=== C* safemem tests === (7)\n");
+    printf("\n=== C* safemem tests === \n");
 
     // test_allocation_boundary();  // 1
     // test_mem_freeing();          // 2
@@ -477,5 +584,9 @@ void safemem_run_tests(void)
     // test_fragmentation();        // 5
     // test_metadata_exhaustion();     // 6
 	test_allocation_alignment(); // 7
-	// test_aligned_fragmentation(); // 8
+	test_allocation_initialization();  // 8
+	test_integer_access();  // 9
+	test_float_access(); // 10
+	test_disposed_access(); // 11
+	// test_aligned_fragmentation(); // 12
 }
