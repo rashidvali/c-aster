@@ -46,6 +46,7 @@ static _Alignas(max_align_t)
 uint8_t arena[C_ASTR_CONFIG_ARENA_SIZE];
 
 static AllocationBlock block_pool[C_ASTR_CONFIG_MAX_BLOCKS];
+static uint64_t slot_generations[C_ASTR_CONFIG_MAX_BLOCKS];
 
 #define C_ASTR_INDEX_SIZE \
     ((C_ASTR_CONFIG_MAX_BLOCKS * 2U) + 1U)
